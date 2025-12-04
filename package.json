@@ -5,7 +5,9 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "mocha"
+    "eslint": "eslint --fix --no-warn-ignored .",
+    "test": "mocha",
+    "watch": "watch-eslint  --fix --color ."
   },
   "bin": {
     "page-shots": "./index.js"
@@ -60,8 +62,11 @@
     "sanitize-filename": "^1.6.3"
   },
   "devDependencies": {
+    "@aptuitiv/eslint-config-aptuitiv": "^1.2.0",
     "chai": "^6.2.1",
     "chai-as-promised": "^8.0.2",
-    "mocha": "^11.7.5"
+    "eslint": "^9.38.0",
+    "mocha": "^11.7.5",
+    "watch-eslint": "^1.1.0"
   }
 }
