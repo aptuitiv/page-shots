@@ -4,7 +4,9 @@
  * these build tools. That configuration is on the src/javascript.js file.
  */
 
+// eslint-disable-next-line import-x/no-extraneous-dependencies -- This library is only used for development so it should be in devDependencies
 import aptuitivEslint from '@aptuitiv/eslint-config-aptuitiv';
+// eslint-disable-next-line import-x/no-extraneous-dependencies -- This library is only used for development so it should be in devDependencies
 import { defineConfig, globalIgnores } from "eslint/config";
 
 export default defineConfig([
