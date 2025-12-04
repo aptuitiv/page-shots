@@ -70,4 +70,5 @@ class InitJson {
     }
 }
 
-export const json = new InitJson;
+const init = new InitJson();
+export default init;
