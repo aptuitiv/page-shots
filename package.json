@@ -52,16 +52,16 @@
   },
   "homepage": "https://github.com/erictompkins/page-shots#readme",
   "dependencies": {
-    "chalk": "^2.4.2",
-    "commander": "^2.20.0",
+    "chalk": "^5.6.2",
+    "commander": "^14.0.2",
     "esm": "^3.2.25",
-    "ora": "^3.4.0",
-    "puppeteer": "^1.18.1",
-    "sanitize-filename": "^1.6.1"
+    "ora": "^9.0.0",
+    "puppeteer": "^24.32.0",
+    "sanitize-filename": "^1.6.3"
   },
   "devDependencies": {
     "chai": "^6.2.1",
     "chai-as-promised": "^8.0.2",
-    "mocha": "^6.1.4"
+    "mocha": "^11.7.5"
   }
 }
