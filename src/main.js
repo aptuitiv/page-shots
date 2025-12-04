@@ -10,11 +10,13 @@ import ora from 'ora';
 
 /**
  * Sleeps the program
+ *
  * @link https://flaviocopes.com/javascript-sleep/
- * @param {Number} milliseconds 
+ * @param ms
+ * @param {number} milliseconds 
  */
 function wait(ms) {
-    return new Promise(resolve => setTimeout(() => resolve(), ms));
+    return new Promise((resolve) => setTimeout(() => resolve(), ms));
 }
 
 /**
@@ -73,17 +75,19 @@ class PageShots {
      * Initialize the browser and page objects
      */
     async init() {
-        let _self = this;
+        console.log('INIT: ', init);
+        const _self = this;
         this.browser = await puppeteer.launch();
         this.page = await this.browser.newPage();
 
         this.page.on('load', function () {
-            _self.pageSpinner.succeed(green(this.url() + ' loaded in ' + _self._getPageElapsedTime()));
+            _self.pageSpinner.succeed(green(`${this.url()} loaded in ${_self._getPageElapsedTime()}`));
         });
     }
 
     /**
      * Sets the configuration in a JSON object
+     *
      * @param {object} json 
      */
     setConfigJson(json) {
@@ -122,6 +126,7 @@ class PageShots {
      * Sets the base URL.
      * This is not required, but if it's set, then the base URL will be
      * prepended to all other URLs
+     *
      * @param {string} url The base URL
      */
     setBaseUrl(url) {
@@ -135,6 +140,7 @@ class PageShots {
 
     /**
      * Set the directory to output the screenshots to
+     *
      * @param {string} dir The directory relative to where the script is run to output the screenshots to
      */
     setDir(dir) {
@@ -145,6 +151,7 @@ class PageShots {
 
     /**
      * Sets the file type to save screenshots as
+     *
      * @param {string} type The file type to save screenshots as
      */
     setFileType(type) {
@@ -156,8 +163,9 @@ class PageShots {
 
     /**
      * Validates that the file type is allowed
+     *
      * @param {string} type The file type
-     * @return {string|boolean} The valid file type or false if the type is not valid
+     * @returns {string|boolean} The valid file type or false if the type is not valid
      */
     _validateType(type) {
         let returnVal = false;
@@ -175,11 +183,12 @@ class PageShots {
 
     /**
      * Adds a URL to get a screenshot for
+     *
      * @param {string|Array|object} url 
      */
     addUrl(url) {
         if (Array.isArray(url)) {
-            for (let u of url) {
+            for (const u of url) {
                 this._addUrl(u);
             }
         } else {
@@ -189,12 +198,13 @@ class PageShots {
 
     /**
      * Adds a URL to get a screenshot for
+     *
      * @param {string|object} url 
      */
     _addUrl(url) {
         if (typeof url === 'string') {
             if (url.length > 0) {
-                this.urls.push(this._setupFirstUrl({ url: url }));
+                this.urls.push(this._setupFirstUrl({ url }));
             }
         } else if (typeof url === 'object' && typeof url.url !== 'undefined') {
             this.urls.push(this._setupFirstUrl(url));
@@ -240,16 +250,16 @@ class PageShots {
         let height = 0,
             width = 0;
         if (typeof size === 'string') {
-            let sizes = size.split('x');
+            const sizes = size.split('x');
             if (sizes.length == 2) {
                 width = parseInt(sizes[0]);
                 height = parseInt(sizes[1]);
                 if (height > 0 && width > 0) {
-                    this.sizes.push({ width: width, height: height });
+                    this.sizes.push({ width, height });
                 }
             }
         } else if (Array.isArray(size) && size.length > 0) {
-            for (let s of size) {
+            for (const s of size) {
                 this.addSize(s);
             }
         } else if (typeof size === 'object' && typeof size.width !== 'undefined' && typeof size.height !== 'undefined') {
@@ -263,6 +273,7 @@ class PageShots {
 
     /**
      * Sets the width of the viewport to take the screenshot in
+     *
      * @param {integer} width 
      */
     setWidth(width) {
@@ -274,6 +285,7 @@ class PageShots {
 
     /**
      * Sets the height of the viewport to take the screenshot in
+     *
      * @param {integer} height 
      */
     setHeight(height) {
@@ -285,7 +297,8 @@ class PageShots {
 
     /**
      * Sets the number of milliseconds to delay after loading a page before taking a screenshot
-     * @param {Number} delay The number of milliseconds to delay
+     *
+     * @param {number} delay The number of milliseconds to delay
      */
     setDelay(delay) {
         delay = parseInt(delay);
@@ -299,6 +312,7 @@ class PageShots {
 
     /**
      * Sets whether or not to get a full page screenshot
+     *
      * @param {string|boolean} full 
      */
     setFullScreen(full) {
@@ -311,6 +325,7 @@ class PageShots {
 
     /**
      * Sets the file name for the first URL or the name pattern to use for all URLs
+     *
      * @param {string} name The file name
      */
     setName(name) {
@@ -323,12 +338,12 @@ class PageShots {
                 this.nameFormat = name;
             } else {
                 // Set it as the name for the first URL
-                let ext = this._validateType(extname(name).toLowerCase().replace('.', ''));
+                const ext = this._validateType(extname(name).toLowerCase().replace('.', ''));
                 if (this.urls.length > 0) {
                     // At least one URL has been set. Set the name for the first URL
-                    this.urls[0]['name'] = name;
+                    this.urls[0].name = name;
                     if (ext) {
-                        this.urls[0]['type'] = ext;
+                        this.urls[0].type = ext;
                     }
                 } else {
                     // No URLs have been set yet. Set the name and extension for when the first URL is set later
@@ -342,6 +357,7 @@ class PageShots {
 
     /**
      * Sets the quality to save jpg images as
+     *
      * @param {integer} quality
      */
     setQuality(quality) {
@@ -358,8 +374,8 @@ class PageShots {
         h = parseInt(h);
         if (x >= 0 && y >= 0 && w > 0 && h > 0) {
             this.clip = {
-                x: x,
-                y: y,
+                x,
+                y,
                 width: w,
                 height: h
             }
@@ -370,7 +386,7 @@ class PageShots {
      * Get the screenshots of all of the URLs
      */
     async run() {
-        var delay,
+        let delay,
             dir,
             fullScreen,
             name,
@@ -384,11 +400,11 @@ class PageShots {
                 for (let url of this.urls) {
                     this.pageStartTime = process.hrtime();
                     url = this._setupUrl(url);
-                    this.pageSpinner = ora({ text: 'Loading ' + url.url, spinner: 'arc' }).start();
+                    this.pageSpinner = ora({ text: `Loading ${url.url}`, spinner: 'arc' }).start();
                     try {
                         await this.page.goto(url.url, { waitUntil: 'load' });
                     } catch (err) {
-                        this.pageSpinner.fail(red('Could not load ' + url.url + '. ' + err));
+                        this.pageSpinner.fail(red(`Could not load ${url.url}. ${err}`));
                         console.log('');
                         continue;
                     }
@@ -525,9 +541,10 @@ class PageShots {
 
     /**
      * Gets the screenshot of the image
-     * 
+     *
      * Some code borrowed from @link https://www.screenshotbin.com/blog/handling-lazy-loaded-webpages-puppeteer
      * Some code borrowed from @link https://stackoverflow.com/a/49233383
+     *
      * @param {object} url The URL object
      */
     async _screenshot(url) {
@@ -543,7 +560,7 @@ class PageShots {
         const viewportHeight = this.page.viewport().height;
         let viewportIncr = 0;
         while (viewportIncr + viewportHeight < height) {
-            await this.page.evaluate(_viewportHeight => {
+            await this.page.evaluate((_viewportHeight) => {
                 window.scrollBy(0, _viewportHeight);
             }, viewportHeight);
             await wait(20);
@@ -551,14 +568,14 @@ class PageShots {
         }
 
         // Scroll back to top
-        await this.page.evaluate(_ => {
+        await this.page.evaluate((_) => {
             window.scrollTo(0, 0);
         });
 
         // // Some extra delay to check and make sure that all images loaded
-        let x = await this.page.evaluate(async () => {
+        const x = await this.page.evaluate(async () => {
             const selectors = Array.from(document.querySelectorAll("img"));
-            let y = await Promise.all(selectors.map(img => {
+            const y = await Promise.all(selectors.map((img) => {
                 if (img.complete) return img;
                 return new Promise((resolve, reject) => {
                     img.addEventListener('load', resolve);
@@ -575,16 +592,16 @@ class PageShots {
 
         // Sleep if necessary
         if (url.delay > 0) {
-            this.delaySpinner = ora({ text: 'Delaying ' + url.delay + ' milliseconds', spinner: 'arc' }).start();
+            this.delaySpinner = ora({ text: `Delaying ${url.delay} milliseconds`, spinner: 'arc' }).start();
             await wait(url.delay);
-            this.delaySpinner.succeed(green('Delayed ' + url.delay + ' milliseconds'));
+            this.delaySpinner.succeed(green(`Delayed ${url.delay} milliseconds`));
         }
 
         // Save image screenshot
         try {
-            this.shotSpinner = ora({ text: 'Starting ' + url.type + ' screenshot ' + url.path + ' (' + url.width + 'px / ' + url.height + 'px)', spinner: 'arc' }).start();
+            this.shotSpinner = ora({ text: `Starting ${url.type} screenshot ${url.path} (${url.width}px / ${url.height}px)`, spinner: 'arc' }).start();
             await this.page.screenshot(this._getScreenshotConfig(url));
-            this.shotSpinner.succeed(green('Saved ' + url.path + ' (' + url.width + 'px / ' + url.height + 'px)'));
+            this.shotSpinner.succeed(green(`Saved ${url.path} (${url.width}px / ${url.height}px)`));
         } catch (err) {
             if (this.shotSpinner !== null) {
                 this.shotSpinner.stop();
@@ -606,6 +623,8 @@ class PageShots {
 
     /**
      * Creates the directory if it doesn't exist already
+     *
+     * @param dir
      */
     _createDir(dir) {
         if (dir.length > 0 && !existsSync(dir)) {
@@ -615,8 +634,9 @@ class PageShots {
 
     /**
      * Sets up the options for the URL
+     *
      * @param {object} url The URL object
-     * @return {object}
+     * @returns {object}
      */
     _setupUrl(url) {
         url.baseUrl = this._getBaseUrl(url);
@@ -625,7 +645,7 @@ class PageShots {
         if (url.baseUrl.length > 0) {
             if (url.url.substring(0, url.baseUrl.length) !== url.baseUrl && url.url.match(/^http(s?):\/\//) === null) {
                 if (url.url.substring(0, 1) !== '/') {
-                    url.url = '/' + url.url;
+                    url.url = `/${url.url}`;
                 }
                 url.url = url.baseUrl + url.url;
             }
@@ -633,7 +653,7 @@ class PageShots {
 
         if (url.url.match(/^http(s?):\/\//) === null) {
             // The URL does not start with "http" or "https"
-            url.url = 'http://' + url.url;
+            url.url = `http://${url.url}`;
         }
 
         url.clip = this._getClip(url);
@@ -651,7 +671,7 @@ class PageShots {
         url.path = this._getPath(url);
 
         // Set the file type again in case the filename extension changes it
-        let ext = this._validateType(extname(url.filename).toLowerCase().replace('.', ''));
+        const ext = this._validateType(extname(url.filename).toLowerCase().replace('.', ''));
         if (ext) {
             url.type = ext;
         }
@@ -661,8 +681,9 @@ class PageShots {
 
     /**
      * Regenerates the URL filename and path
+     *
      * @param {object} url The URL object
-     * @return {object} The updated URL object
+     * @returns {object} The updated URL object
      */
     _regenerateFilename(url) {
         delete url.filename;
@@ -671,7 +692,7 @@ class PageShots {
         url.path = this._getPath(url);
 
         // Set the file type again in case the filename extension changes it
-        let ext = this._validateType(extname(url.filename).toLowerCase().replace('.', ''));
+        const ext = this._validateType(extname(url.filename).toLowerCase().replace('.', ''));
         if (ext) {
             url.type = ext;
         }
@@ -680,11 +701,12 @@ class PageShots {
 
     /**
      * Gets the base URL if available
+     *
      * @param {object} url The URL object
-     * @return {string}
+     * @returns {string}
      */
     _getBaseUrl(url) {
-        let baseUrl = this.baseUrl;
+        let { baseUrl } = this;
         if (typeof url.baseUrl === 'string' && url.baseUrl.length > 0) {
             baseUrl = url.baseUrl;
         }
@@ -693,11 +715,12 @@ class PageShots {
 
     /**
      * Gets the screenshot clip object if available
+     *
      * @param {object} url The URL object
-     * @return {object|boolean}
+     * @returns {object|boolean}
      */
     _getClip(url) {
-        let clip = this.clip,
+        let { clip } = this,
             x, y, w, h;
         if (
             typeof url.clip !== 'undefined'
@@ -712,8 +735,8 @@ class PageShots {
             h = parseInt(url.clip.height);
             if (x >= 0 && y >= 0 && w >= 0 && h >= 0) {
                 clip = {
-                    x: x,
-                    y: y,
+                    x,
+                    y,
                     width: w,
                     height: h
                 }
@@ -724,11 +747,12 @@ class PageShots {
 
     /**
      * Gets the number of milliseconds to delay after loading the URL before taking a screenshot
+     *
      * @param {object} url The URL object
-     * @return {Number}
+     * @returns {number}
      */
     _getDelay(url) {
-        let delay = this.delay,
+        let { delay } = this,
             temp;
         if (typeof url.delay !== 'undefined') {
             temp = parseInt(url.delay);
@@ -744,11 +768,12 @@ class PageShots {
 
     /**
      * Gets the directory to save the screenshot in
+     *
      * @param {object} url The URL object
-     * @return {string}
+     * @returns {string}
      */
     _getDir(url) {
-        let dir = this.dir;
+        let { dir } = this;
         if (typeof url.dir === 'string' && url.dir.length > 0) {
             dir = url.dir;
         }
@@ -757,6 +782,7 @@ class PageShots {
 
     /**
      * Gets the file name to save the screenshot as
+     *
      * @param {string} url 
      * @returns {string}
      */
@@ -788,7 +814,7 @@ class PageShots {
             setExt = false
         }
         if (setExt) {
-            filename += '.' + type;
+            filename += `.${type}`;
         }
 
         return filename;
@@ -821,7 +847,7 @@ class PageShots {
 
         // Get the URL stub
         let stub = url.url.replace(/http(s?):\/\//, '');
-        let stubParts = stub.split('/');
+        const stubParts = stub.split('/');
         stub = stub.replace(stubParts[0], '').trim();
         if (stub == '/' || stub.length == 0) {
             stub = 'home';
@@ -851,7 +877,7 @@ class PageShots {
 
         // Set up the "size" portion of the name
         if (typeof url.sizeName === 'undefined' || (typeof url.sizeName !== 'string' || url.sizeName.length == 0)) {
-            url.sizeName = url.width + 'x' + url.height;
+            url.sizeName = `${url.width}x${url.height}`;
         }
 
         // Format the name
@@ -869,11 +895,12 @@ class PageShots {
 
     /**
      * Gets whether or not the screenshot should be full screen for the URL
+     *
      * @param {object} url The URL object
-     * @return {boolean}
+     * @returns {boolean}
      */
     _getFullScreen(url) {
-        let fullScreen = this.fullScreen;
+        let { fullScreen } = this;
         if (typeof url.fit !== 'undefined') {
             if (url.fit === true || url.fit === 'true' || url.fit === 'y' || url.fit === 'yes') {
                 fullScreen = false;
@@ -893,13 +920,14 @@ class PageShots {
 
     /**
      * Gets the height to view the page as
+     *
      * @param {object} url The URL object
-     * @return {integer}
+     * @returns {integer}
      */
     _getHeight(url) {
-        let height = this.height;
+        let { height } = this;
         if (typeof url.height === 'number') {
-            let num = parseInt(url.height);
+            const num = parseInt(url.height);
             if (num > 1) {
                 height = num;
             }
@@ -909,8 +937,9 @@ class PageShots {
 
     /**
      * Gets the path to save the screenshot at
+     *
      * @param {object} url The URL object
-     * @return string
+     * @returns string
      */
     _getPath(url) {
         let dir = this._getDir(url),
@@ -925,13 +954,14 @@ class PageShots {
 
     /**
      * Gets whether or not the screenshot should be full screen for the URL
+     *
      * @param {object} url The URL object
-     * @return {integer}
+     * @returns {integer}
      */
     _getQuality(url) {
-        let quality = this.quality;
+        let { quality } = this;
         if (typeof url.quality === 'number') {
-            let num = parseInt(url.quality);
+            const num = parseInt(url.quality);
             if (num > 0 && num <= 100) {
                 quality = num;
             }
@@ -941,27 +971,28 @@ class PageShots {
 
     /**
      * Gets the sizes for a URL
+     *
      * @param {object} url The URL object
-     * @return {Array}
+     * @returns {Array}
      */
     _getSizes(url) {
-        let sizes = this.sizes,
+        let { sizes } = this,
             temp = [];
         if (typeof url.sizes !== 'undefined' && Array.isArray(url.sizes) && url.sizes.length > 0) {
-            for (let size of url.sizes) {
+            for (const size of url.sizes) {
                 if (typeof size === 'object' && typeof size.width !== undefined && typeof size.height !== 'undefined') {
                     size.width = parseInt(size.width);
                     size.height = parseInt(size.height);
                     if (size.width > 0 && size.height > 0) {
                         temp.push(size);
                     }
-                } else if (typeof size == 'string') {
-                    let sizeParts = size.split('x');
+                } else if (typeof size === 'string') {
+                    const sizeParts = size.split('x');
                     if (sizeParts.length == 2) {
-                        let width = parseInt(sizeParts[0]);
-                        let height = parseInt(sizeParts[1]);
+                        const width = parseInt(sizeParts[0]);
+                        const height = parseInt(sizeParts[1]);
                         if (width > 0 && height > 0) {
-                            temp.push({ width: width, height: height });
+                            temp.push({ width, height });
                         }
                     }
                 }
@@ -975,13 +1006,14 @@ class PageShots {
 
     /**
      * The file type to save the screenshot as
+     *
      * @param {object} url The URL object
-     * @return {string}
+     * @returns {string}
      */
     _getType(url) {
         let type = this.fileType;
         if (typeof url.type !== 'undefined') {
-            let urlType = this._validateType(url.type);
+            const urlType = this._validateType(url.type);
             if (urlType) {
                 type = urlType;
             }
@@ -991,13 +1023,14 @@ class PageShots {
 
     /**
      * Gets the width to view the page as
+     *
      * @param {object} url The URL object
-     * @return {integer}
+     * @returns {integer}
      */
     _getWidth(url) {
-        let width = this.width;
+        let { width } = this;
         if (typeof url.width === 'number') {
-            let num = parseInt(url.width);
+            const num = parseInt(url.width);
             if (num > 1) {
                 width = num;
             }
@@ -1007,11 +1040,12 @@ class PageShots {
 
     /**
      * Gets the configuration object for changing the page viewport
+     *
      * @param {object} url The URL information
      * @returns {object}
      */
     _getViewportConfig(url) {
-        let config = {
+        const config = {
             width: url.width,
             height: url.height
         };
@@ -1020,11 +1054,12 @@ class PageShots {
 
     /**
      * Gets the configuration object for taking a screenshot
+     *
      * @param {object} url The URL information
      * @returns {object}
      */
     _getScreenshotConfig(url) {
-        let config = {
+        const config = {
             fullPage: url.fullScreen,
             path: url.path
         };
@@ -1040,21 +1075,22 @@ class PageShots {
 
     /**
      * Prints the total time that it took to get all screenshots
-     * @return {string}
+     *
+     * @returns {string}
      */
     _getPageElapsedTime() {
-        let diff = process.hrtime(this.pageStartTime);
-        let time = diff[0] + diff[1] / 1e9;
-        return time + 's';
+        const diff = process.hrtime(this.pageStartTime);
+        const time = diff[0] + diff[1] / 1e9;
+        return `${time}s`;
     }
 
     /**
      * Prints the total time that it took to get all screenshots
      */
     _printElapsedTime() {
-        let diff = process.hrtime(this.startTime);
-        let time = diff[0] + diff[1] / 1e9;
-        console.log(bold('Total time to get screenshots: ') + time + 's');
+        const diff = process.hrtime(this.startTime);
+        const time = diff[0] + diff[1] / 1e9;
+        console.log(`${bold('Total time to get screenshots: ') + time}s`);
     }
 }
 
@@ -1071,11 +1107,12 @@ class jsonParse {
 
     /**
      * Set the JSON file name
+     *
      * @param {string} file The file name
      */
     setFile(file) {
         if (typeof file === 'string' && file.length > 0) {
-            let ext = extname(file).toLowerCase().replace('.', '');
+            const ext = extname(file).toLowerCase().replace('.', '');
             if (ext.length === 0) {
                 file += '.json';
             }
@@ -1085,7 +1122,8 @@ class jsonParse {
 
     /**
      * Gets the name of the JSON file
-     * @return {string}
+     *
+     * @returns {string}
      */
     getFile() {
         return this.file;
@@ -1093,7 +1131,8 @@ class jsonParse {
 
     /**
      * Parse the JSON file
-     * @return {object|false}
+     *
+     * @returns {object|false}
      */
     parse() {
         let file,
@@ -1104,7 +1143,7 @@ class jsonParse {
                 returnData = JSON.parse(file);
             }
         } catch (err) {
-            console.log(red('Error while reason the JSON config file ' + this.file));
+            console.log(red(`Error while reason the JSON config file ${this.file}`));
             console.log(red(err));
             process.exit();
         }

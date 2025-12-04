@@ -18,6 +18,7 @@ class InitJson {
 
     /**
      * Set the name of the directory to save the file in
+     *
      * @param {string} dir The name of the diectory to save the file in
      */
     setDir(dir) {
@@ -25,7 +26,7 @@ class InitJson {
             dir = dir.trim();
             if (dir.length > 1) {
                 if (dir.substring(dir.length - 1) !== '/') {
-                    dir = dir + '/';
+                    dir = `${dir}/`;
                 }
                 this.dir = dir;
             }
@@ -34,10 +35,11 @@ class InitJson {
 
     /**
      * Set the file name for the JSON file
+     *
      * @param {string} name The filename for the JSON file
      */
     setFilename(name) {
-        let ext = extname(name).toLowerCase().replace('.', '');
+        const ext = extname(name).toLowerCase().replace('.', '');
         if (ext !== 'json') {
             name += '.json';
         }
@@ -49,7 +51,7 @@ class InitJson {
      * Builds and saves the json file
      */
     build() {
-        let json = {
+        const json = {
             baseUrl: '',
             name: '{url}-{width}',
             type: 'jpg',
@@ -58,13 +60,13 @@ class InitJson {
                 '1300x800'
             ]
         }
-        let filePath = join(this.dir, this.filename),
-            spinner = ora({ text: 'Creating ' + this.filename, spinner: 'arc' }).start();
+        const filePath = join(this.dir, this.filename),
+            spinner = ora({ text: `Creating ${this.filename}`, spinner: 'arc' }).start();
 
         const writeStream = createWriteStream(filePath, { flags: 'w' });
         writeStream.write(JSON.stringify(json, null, 4));
         writeStream.close();
-        spinner.succeed(chalk.green(this.filename + ' created'));
+        spinner.succeed(chalk.green(`${this.filename} created`));
     }
 }
 

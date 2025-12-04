@@ -4,16 +4,16 @@
 import program from 'commander';
 import chalk from 'chalk';
 import pkg from '../package.json';
-import main from './main';
-import init from './init';
 import { pageShots, json } from './main';
+import init from './init';
 
 let getScreenshots = true
 
 /**
  * Collect multiple parameter values into one array
+ *
  * @param {string} val 
- * @param {array} values 
+ * @param {Array} values 
  */
 function collect(val, values) {
     values.push(val);
@@ -27,7 +27,7 @@ program
     .option('-b, --base <string>', 'The base URL value. If set then the URL will be appended to this value.')
     .option('-c, --config <string>', 'The name of the JSON config file to use to get the screenshots. If this is set all other arguments are ignored.')
     .option('-d, --dir <string>', 'The directory relative to where the script is run to output the screenshots to.')
-    .option('-D, --delay <integer>', 'The number of milliseconds to delay after loading before taking a picture of the page. Can not be greater than ' + pageShots.maxDelay + '.')
+    .option('-D, --delay <integer>', `The number of milliseconds to delay after loading before taking a picture of the page. Can not be greater than ${pageShots.maxDelay}.`)
     .option('-f, --fit', 'Fit the screenshot to the provided height and width.')
     .option('-H, --height <integer>', 'Integer height of the viewport to take the screenshot in. Use "--fit" if you want the screenshot to only capture the viewport width and height.', 900)
     .option('--jpg', 'Set the image type for screenshots to be "jpg". Alternate method to using -t.')
@@ -47,7 +47,7 @@ program
 program
     .command('init [file]')
     .description('Initialize the JSON file that is used to configure the URLs to get screenshots of.')
-    .action(function (file, env) {
+    .action((file, env) => {
         init.json.setDir(process.cwd());
         if (file) {
             init.json.setFilename(file);
@@ -57,7 +57,7 @@ program
     });
 
 // Output some additional examples
-program.on('--help', function () {
+program.on('--help', () => {
     console.log('');
     console.log('Examples:')
     console.log('  page-shots -d images -u https://www.mysite.com');
@@ -141,11 +141,11 @@ async function cli() {
 
             if (!hasUrl) {
                 // No URLs were specified. Parse the JSON config file if possible
-                let jsonConfig = json.parse();
+                const jsonConfig = json.parse();
                 if (jsonConfig) {
                     pageShots.setConfigJson(jsonConfig);
                 } else {
-                    console.log(chalk.red(json.getFile() + ' could not be found'));
+                    console.log(chalk.red(`${json.getFile()} could not be found`));
                 }
             }
             pageShots.run();
@@ -159,7 +159,7 @@ async function cli() {
 /**
  * Output any unhandled rejections
  */
-process.on('unhandledRejection', function (err) {
+process.on('unhandledRejection', (err) => {
     console.log('----- ERROR ------');
     console.log(err);
 });
