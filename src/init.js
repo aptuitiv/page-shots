@@ -1,8 +1,8 @@
-const fs = require('fs'),
-    path = require('path')
-    chalk = require('chalk'),
-    sanitize = require('sanitize-filename'),
-    ora = require('ora');
+import { createWriteStream } from 'fs';
+import { extname, join } from 'path';
+import chalk from 'chalk';
+import sanitize from 'sanitize-filename';
+import ora from 'ora';
 
 /**
  * Initialize the JSON file used to configure the URLs to get screenshots of
@@ -24,7 +24,7 @@ class InitJson {
         if (typeof dir === 'string') {
             dir = dir.trim();
             if (dir.length > 1) {
-                if (dir.substring(dir.length -1) !== '/') {
+                if (dir.substring(dir.length - 1) !== '/') {
                     dir = dir + '/';
                 }
                 this.dir = dir;
@@ -37,11 +37,11 @@ class InitJson {
      * @param {string} name The filename for the JSON file
      */
     setFilename(name) {
-        let ext = path.extname(name).toLowerCase().replace('.', '');
+        let ext = extname(name).toLowerCase().replace('.', '');
         if (ext !== 'json') {
             name += '.json';
         }
-        name = sanitize(name, {replacement: '-'})
+        name = sanitize(name, { replacement: '-' })
         this.filename = name;
     }
 
@@ -58,14 +58,14 @@ class InitJson {
                 '1300x800'
             ]
         }
-        let filePath = path.join(this.dir, this.filename),
-            spinner = ora({text: 'Creating ' + this.filename, spinner: 'arc'}).start();
+        let filePath = join(this.dir, this.filename),
+            spinner = ora({ text: 'Creating ' + this.filename, spinner: 'arc' }).start();
 
-        const writeStream = fs.createWriteStream(filePath, {flags: 'w'});
+        const writeStream = createWriteStream(filePath, { flags: 'w' });
         writeStream.write(JSON.stringify(json, null, 4));
         writeStream.close();
         spinner.succeed(chalk.green(this.filename + ' created'));
     }
 }
 
-exports.json = new InitJson;
+export const json = new InitJson;

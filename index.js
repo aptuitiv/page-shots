@@ -3,5 +3,5 @@
  * @todo Finish this
  */
 
-const cli = require('./src/cli');
+const cli = import('./src/cli');
 cli.cli(process.argv);

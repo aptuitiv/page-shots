@@ -1,19 +1,19 @@
 /**
  * Main file to process the screenshot
  */
-const puppeteer = require('puppeteer'),
-    fs = require('fs'),
-    path = require('path'),
-    chalk = require('chalk'),
-    sanitize = require('sanitize-filename'),
-    ora = require('ora');
+import puppeteer from 'puppeteer';
+import { existsSync, mkdirSync, readFileSync } from 'fs';
+import { extname, dirname, join } from 'path';
+import chalk from 'chalk';
+import sanitize from 'sanitize-filename';
+import ora from 'ora';
 
 /**
  * Sleeps the program
  * @link https://flaviocopes.com/javascript-sleep/
  * @param {Number} milliseconds 
  */
-function wait (ms) {
+function wait(ms) {
     return new Promise(resolve => setTimeout(() => resolve(), ms));
 }
 
@@ -77,8 +77,8 @@ class PageShots {
         this.browser = await puppeteer.launch();
         this.page = await this.browser.newPage();
 
-        this.page.on('load', function() {
-            _self.pageSpinner.succeed(chalk.green(this.url() + ' loaded in ' + _self._getPageElapsedTime()));
+        this.page.on('load', function () {
+            _self.pageSpinner.succeed(green(this.url() + ' loaded in ' + _self._getPageElapsedTime()));
         });
     }
 
@@ -126,8 +126,8 @@ class PageShots {
      */
     setBaseUrl(url) {
         if (typeof url === 'string' && url.length > 1) {
-            if (url.substring(url.length -1) == '/') {
-                url = url.substring(0, url.length -1);
+            if (url.substring(url.length - 1) == '/') {
+                url = url.substring(0, url.length - 1);
             }
             this.baseUrl = url.trim();
         }
@@ -194,7 +194,7 @@ class PageShots {
     _addUrl(url) {
         if (typeof url === 'string') {
             if (url.length > 0) {
-                this.urls.push(this._setupFirstUrl({url: url}));
+                this.urls.push(this._setupFirstUrl({ url: url }));
             }
         } else if (typeof url === 'object' && typeof url.url !== 'undefined') {
             this.urls.push(this._setupFirstUrl(url));
@@ -245,7 +245,7 @@ class PageShots {
                 width = parseInt(sizes[0]);
                 height = parseInt(sizes[1]);
                 if (height > 0 && width > 0) {
-                    this.sizes.push({width: width, height: height});
+                    this.sizes.push({ width: width, height: height });
                 }
             }
         } else if (Array.isArray(size) && size.length > 0) {
@@ -323,8 +323,8 @@ class PageShots {
                 this.nameFormat = name;
             } else {
                 // Set it as the name for the first URL
-                let ext = this._validateType(path.extname(name).toLowerCase().replace('.', ''));
-                if (this.urls.length >0) {
+                let ext = this._validateType(extname(name).toLowerCase().replace('.', ''));
+                if (this.urls.length > 0) {
                     // At least one URL has been set. Set the name for the first URL
                     this.urls[0]['name'] = name;
                     if (ext) {
@@ -335,7 +335,7 @@ class PageShots {
                     this.firstUrlName = name;
                     this.firstUrlType = ext;
                 }
-                
+
             }
         }
     }
@@ -384,11 +384,11 @@ class PageShots {
                 for (let url of this.urls) {
                     this.pageStartTime = process.hrtime();
                     url = this._setupUrl(url);
-                    this.pageSpinner = ora({text: 'Loading ' + url.url, spinner: 'arc'}).start();
+                    this.pageSpinner = ora({ text: 'Loading ' + url.url, spinner: 'arc' }).start();
                     try {
-                        await this.page.goto(url.url, {waitUntil: 'load'});
+                        await this.page.goto(url.url, { waitUntil: 'load' });
                     } catch (err) {
-                        this.pageSpinner.fail(chalk.red('Could not load ' + url.url + '. ' + err));
+                        this.pageSpinner.fail(red('Could not load ' + url.url + '. ' + err));
                         console.log('');
                         continue;
                     }
@@ -469,21 +469,21 @@ class PageShots {
 
                             // Regenerate the file name and path
                             url = this._regenerateFilename(url);
-                            
+
                             // Make sure that the directory exists
-                            this._createDir(path.dirname(url.path));
+                            this._createDir(dirname(url.path));
 
                             // Take the screenshot
-                            await this._screenshot(url);    
+                            await this._screenshot(url);
                         }
                     } else {
                         // Make sure that the directory exists
-                        this._createDir(path.dirname(url.path));
-                        
+                        this._createDir(dirname(url.path));
+
                         // Take the screenshot
                         await this._screenshot(url);
                     }
-                    
+
                     // Empty line after each URL run
                     console.log('');
                 }
@@ -531,9 +531,9 @@ class PageShots {
      * @param {object} url The URL object
      */
     async _screenshot(url) {
-        this.scrollSpinner = ora({text: 'Scrolling page to try and force all content to load', spinner: 'arc'}).start();
+        this.scrollSpinner = ora({ text: 'Scrolling page to try and force all content to load', spinner: 'arc' }).start();
         await this.page.setViewport(this._getViewportConfig(url));
-        
+
         // Get the height of the rendered page
         const bodyHandle = await this.page.$('body');
         const { height } = await bodyHandle.boundingBox();
@@ -559,38 +559,38 @@ class PageShots {
         let x = await this.page.evaluate(async () => {
             const selectors = Array.from(document.querySelectorAll("img"));
             let y = await Promise.all(selectors.map(img => {
-              if (img.complete) return img;
-              return new Promise((resolve, reject) => {
-                img.addEventListener('load', resolve);
-                img.addEventListener('error', reject);
-              });
+                if (img.complete) return img;
+                return new Promise((resolve, reject) => {
+                    img.addEventListener('load', resolve);
+                    img.addEventListener('error', reject);
+                });
             }));
             return y;
-          });
-        
-         // Some extra delay to let images load
+        });
+
+        // Some extra delay to let images load
         await wait(100);
 
         this.scrollSpinner.stop();
 
         // Sleep if necessary
         if (url.delay > 0) {
-            this.delaySpinner = ora({text: 'Delaying ' + url.delay + ' milliseconds', spinner: 'arc'}).start();
+            this.delaySpinner = ora({ text: 'Delaying ' + url.delay + ' milliseconds', spinner: 'arc' }).start();
             await wait(url.delay);
-            this.delaySpinner.succeed(chalk.green('Delayed ' + url.delay + ' milliseconds'));
+            this.delaySpinner.succeed(green('Delayed ' + url.delay + ' milliseconds'));
         }
-  
+
         // Save image screenshot
         try {
-            this.shotSpinner = ora({text: 'Starting ' + url.type + ' screenshot ' + url.path + ' (' + url.width + 'px / ' + url.height + 'px)', spinner: 'arc'}).start();
+            this.shotSpinner = ora({ text: 'Starting ' + url.type + ' screenshot ' + url.path + ' (' + url.width + 'px / ' + url.height + 'px)', spinner: 'arc' }).start();
             await this.page.screenshot(this._getScreenshotConfig(url));
-            this.shotSpinner.succeed(chalk.green('Saved ' + url.path + ' (' + url.width + 'px / ' + url.height + 'px)'));
+            this.shotSpinner.succeed(green('Saved ' + url.path + ' (' + url.width + 'px / ' + url.height + 'px)'));
         } catch (err) {
             if (this.shotSpinner !== null) {
                 this.shotSpinner.stop();
             }
-            console.log(chalk.red('Error while taking the screenshot'));
-            console.log(chalk.red(err));
+            console.log(red('Error while taking the screenshot'));
+            console.log(red(err));
         }
     }
 
@@ -608,8 +608,8 @@ class PageShots {
      * Creates the directory if it doesn't exist already
      */
     _createDir(dir) {
-        if (dir.length > 0 && !fs.existsSync(dir)) {
-            fs.mkdirSync(dir, {recursive: true});
+        if (dir.length > 0 && !existsSync(dir)) {
+            mkdirSync(dir, { recursive: true });
         }
     }
 
@@ -651,11 +651,11 @@ class PageShots {
         url.path = this._getPath(url);
 
         // Set the file type again in case the filename extension changes it
-        let ext = this._validateType(path.extname(url.filename).toLowerCase().replace('.', ''));
+        let ext = this._validateType(extname(url.filename).toLowerCase().replace('.', ''));
         if (ext) {
             url.type = ext;
         }
-        
+
         return url;
     }
 
@@ -671,7 +671,7 @@ class PageShots {
         url.path = this._getPath(url);
 
         // Set the file type again in case the filename extension changes it
-        let ext = this._validateType(path.extname(url.filename).toLowerCase().replace('.', ''));
+        let ext = this._validateType(extname(url.filename).toLowerCase().replace('.', ''));
         if (ext) {
             url.type = ext;
         }
@@ -698,10 +698,10 @@ class PageShots {
      */
     _getClip(url) {
         let clip = this.clip,
-            x,y,w,h;
+            x, y, w, h;
         if (
-            typeof url.clip !== 'undefined' 
-            && typeof url.clip.x !== 'undefined' 
+            typeof url.clip !== 'undefined'
+            && typeof url.clip.x !== 'undefined'
             && typeof url.clip.y !== 'undefined'
             && typeof url.clip.width !== 'undefined'
             && typeof url.clip.height !== 'undefined'
@@ -783,7 +783,7 @@ class PageShots {
         }
 
         // Add the extension
-        ext = this._validateType(path.extname(filename).toLowerCase().replace('.', ''));
+        ext = this._validateType(extname(filename).toLowerCase().replace('.', ''));
         if (ext) {
             setExt = false
         }
@@ -806,15 +806,14 @@ class PageShots {
      * @param {object} url The URL object
      * @param {string} name The name format to use
      */
-    _formatFileName(url, name)
-    {
+    _formatFileName(url, name) {
         // Set up the "url" portion of the name
         let urlName = url.url.replace(/http(s?):\/\//, '');
-        urlName = sanitize(urlName, {replacement: '-'});
+        urlName = sanitize(urlName, { replacement: '-' });
         urlName = urlName.replace(/\.+/g, '-');
         urlName = urlName.replace(/-{2,}/g, '-');
         if (urlName.substring(urlName.length - 1) == '-') {
-            urlName = urlName.substring(0, urlName.length -1);
+            urlName = urlName.substring(0, urlName.length - 1);
         }
         if (urlName.substring(0, 1) == '-') {
             urlName = urlName.substring(1);
@@ -830,11 +829,11 @@ class PageShots {
             if (stub.substring(0, 1) == '/') {
                 stub = stub.substring(1);
             }
-            stub = sanitize(stub, {replacement: '-'});
+            stub = sanitize(stub, { replacement: '-' });
             stub = stub.replace(/\.+/g, '-');
             stub = stub.replace(/-{2,}/g, '-');
             if (stub.substring(stub.length - 1) == '-') {
-                stub = stub.substring(0, stub.length -1);
+                stub = stub.substring(0, stub.length - 1);
             }
             if (stub.substring(0, 1) == '-') {
                 stub = stub.substring(1);
@@ -921,7 +920,7 @@ class PageShots {
         } else {
             filename = this._getFilename(url);
         }
-        return path.join(dir, filename);
+        return join(dir, filename);
     }
 
     /**
@@ -962,7 +961,7 @@ class PageShots {
                         let width = parseInt(sizeParts[0]);
                         let height = parseInt(sizeParts[1]);
                         if (width > 0 && height > 0) {
-                            temp.push({width: width, height: height});
+                            temp.push({ width: width, height: height });
                         }
                     }
                 }
@@ -1055,7 +1054,7 @@ class PageShots {
     _printElapsedTime() {
         let diff = process.hrtime(this.startTime);
         let time = diff[0] + diff[1] / 1e9;
-        console.log(chalk.bold('Total time to get screenshots: ') + time + 's');
+        console.log(bold('Total time to get screenshots: ') + time + 's');
     }
 }
 
@@ -1076,7 +1075,7 @@ class jsonParse {
      */
     setFile(file) {
         if (typeof file === 'string' && file.length > 0) {
-            let ext = path.extname(file).toLowerCase().replace('.', '');
+            let ext = extname(file).toLowerCase().replace('.', '');
             if (ext.length === 0) {
                 file += '.json';
             }
@@ -1100,18 +1099,18 @@ class jsonParse {
         let file,
             returnData = false;
         try {
-            if (fs.existsSync(this.file)) {
-                file = fs.readFileSync(this.file, 'utf8');
+            if (existsSync(this.file)) {
+                file = readFileSync(this.file, 'utf8');
                 returnData = JSON.parse(file);
             }
         } catch (err) {
-            console.log(chalk.red('Error while reason the JSON config file ' + this.file));
-            console.log(chalk.red(err));
+            console.log(red('Error while reason the JSON config file ' + this.file));
+            console.log(red(err));
             process.exit();
         }
         return returnData;
     }
 }
 
-exports.pageShots = new PageShots();
-exports.json = new jsonParse();
+export const pageShots = new PageShots();
+export const json = new jsonParse();

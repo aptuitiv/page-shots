@@ -3,6 +3,7 @@
   "version": "1.1.0",
   "description": "Take screenshots of multiple pages and in multiple sizes",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "mocha"
   },
