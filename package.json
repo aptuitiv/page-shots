@@ -8,7 +8,7 @@
     "test": "mocha"
   },
   "bin": {
-    "page-shots": "bin/page-shots.js"
+    "page-shots": "./index.js"
   },
   "publishConfig": {
     "access": "public"

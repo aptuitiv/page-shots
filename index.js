@@ -1,7 +1,4 @@
-/**
- * Intended to be run from another script
- * @todo Finish this
- */
+#! /usr/bin/env node
 
 const cli = import('./src/cli');
-cli.cli(process.argv);
+cli.cli();
