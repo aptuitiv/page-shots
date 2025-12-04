@@ -81,7 +81,7 @@ class PageShots {
         this.page = await this.browser.newPage();
 
         this.page.on('load', function () {
-            _self.pageSpinner.succeed(green(`${this.url()} loaded in ${_self._getPageElapsedTime()}`));
+            _self.pageSpinner.succeed(chalk.green(`${this.url()} loaded in ${_self._getPageElapsedTime()}`));
         });
     }
 
@@ -131,7 +131,7 @@ class PageShots {
      */
     setBaseUrl(url) {
         if (typeof url === 'string' && url.length > 1) {
-            if (url.substring(url.length - 1) == '/') {
+            if (url.substring(url.length - 1) === '/') {
                 url = url.substring(0, url.length - 1);
             }
             this.baseUrl = url.trim();
@@ -171,8 +171,8 @@ class PageShots {
         let returnVal = false;
         if (typeof type === 'string' && type.length > 0) {
             type = type.toLowerCase();
-            if (type === 'jpg' || type == 'jpeg' || type === 'png') {
-                if (type == 'jpeg') {
+            if (type === 'jpg' || type === 'jpeg' || type === 'png') {
+                if (type === 'jpeg') {
                     type = 'jpg';
                 }
                 returnVal = type;
@@ -220,7 +220,7 @@ class PageShots {
      * @param {object} url The URL object
      */
     _setupFirstUrl(url) {
-        if (this.urls.length == 0) {
+        if (this.urls.length === 0) {
             if (this.firstUrlName) {
                 url.name = this.firstUrlName;
                 if (this.firstUrlType) {
@@ -251,7 +251,7 @@ class PageShots {
             width = 0;
         if (typeof size === 'string') {
             const sizes = size.split('x');
-            if (sizes.length == 2) {
+            if (sizes.length === 2) {
                 width = parseInt(sizes[0]);
                 height = parseInt(sizes[1]);
                 if (height > 0 && width > 0) {
@@ -404,7 +404,7 @@ class PageShots {
                     try {
                         await this.page.goto(url.url, { waitUntil: 'load' });
                     } catch (err) {
-                        this.pageSpinner.fail(red(`Could not load ${url.url}. ${err}`));
+                        this.pageSpinner.fail(chalk.red(`Could not load ${url.url}. ${err}`));
                         console.log('');
                         continue;
                     }
@@ -594,20 +594,20 @@ class PageShots {
         if (url.delay > 0) {
             this.delaySpinner = ora({ text: `Delaying ${url.delay} milliseconds`, spinner: 'arc' }).start();
             await wait(url.delay);
-            this.delaySpinner.succeed(green(`Delayed ${url.delay} milliseconds`));
+            this.delaySpinner.succeed(chalk.green(`Delayed ${url.delay} milliseconds`));
         }
 
         // Save image screenshot
         try {
             this.shotSpinner = ora({ text: `Starting ${url.type} screenshot ${url.path} (${url.width}px / ${url.height}px)`, spinner: 'arc' }).start();
             await this.page.screenshot(this._getScreenshotConfig(url));
-            this.shotSpinner.succeed(green(`Saved ${url.path} (${url.width}px / ${url.height}px)`));
+            this.shotSpinner.succeed(chalk.green(`Saved ${url.path} (${url.width}px / ${url.height}px)`));
         } catch (err) {
             if (this.shotSpinner !== null) {
                 this.shotSpinner.stop();
             }
-            console.log(red('Error while taking the screenshot'));
-            console.log(red(err));
+            console.log(chalk.red('Error while taking the screenshot'));
+            console.log(chalk.red(err));
         }
     }
 
@@ -838,10 +838,10 @@ class PageShots {
         urlName = sanitize(urlName, { replacement: '-' });
         urlName = urlName.replace(/\.+/g, '-');
         urlName = urlName.replace(/-{2,}/g, '-');
-        if (urlName.substring(urlName.length - 1) == '-') {
+        if (urlName.substring(urlName.length - 1) === '-') {
             urlName = urlName.substring(0, urlName.length - 1);
         }
-        if (urlName.substring(0, 1) == '-') {
+        if (urlName.substring(0, 1) === '-') {
             urlName = urlName.substring(1);
         }
 
@@ -849,19 +849,19 @@ class PageShots {
         let stub = url.url.replace(/http(s?):\/\//, '');
         const stubParts = stub.split('/');
         stub = stub.replace(stubParts[0], '').trim();
-        if (stub == '/' || stub.length == 0) {
+        if (stub === '/' || stub.length === 0) {
             stub = 'home';
         } else {
-            if (stub.substring(0, 1) == '/') {
+            if (stub.substring(0, 1) === '/') {
                 stub = stub.substring(1);
             }
             stub = sanitize(stub, { replacement: '-' });
             stub = stub.replace(/\.+/g, '-');
             stub = stub.replace(/-{2,}/g, '-');
-            if (stub.substring(stub.length - 1) == '-') {
+            if (stub.substring(stub.length - 1) === '-') {
                 stub = stub.substring(0, stub.length - 1);
             }
-            if (stub.substring(0, 1) == '-') {
+            if (stub.substring(0, 1) === '-') {
                 stub = stub.substring(1);
             }
         }
@@ -876,7 +876,7 @@ class PageShots {
         }
 
         // Set up the "size" portion of the name
-        if (typeof url.sizeName === 'undefined' || (typeof url.sizeName !== 'string' || url.sizeName.length == 0)) {
+        if (typeof url.sizeName === 'undefined' || (typeof url.sizeName !== 'string' || url.sizeName.length === 0)) {
             url.sizeName = `${url.width}x${url.height}`;
         }
 
@@ -988,7 +988,7 @@ class PageShots {
                     }
                 } else if (typeof size === 'string') {
                     const sizeParts = size.split('x');
-                    if (sizeParts.length == 2) {
+                    if (sizeParts.length === 2) {
                         const width = parseInt(sizeParts[0]);
                         const height = parseInt(sizeParts[1]);
                         if (width > 0 && height > 0) {
@@ -1063,7 +1063,7 @@ class PageShots {
             fullPage: url.fullScreen,
             path: url.path
         };
-        if (url.type == 'jpg') {
+        if (url.type === 'jpg') {
             config.quality = url.quality;
         }
         if (url.clip) {
@@ -1090,7 +1090,7 @@ class PageShots {
     _printElapsedTime() {
         const diff = process.hrtime(this.startTime);
         const time = diff[0] + diff[1] / 1e9;
-        console.log(`${bold('Total time to get screenshots: ') + time}s`);
+        console.log(`${chalk.bold('Total time to get screenshots: ') + time}s`);
     }
 }
 
@@ -1143,8 +1143,8 @@ class jsonParse {
                 returnData = JSON.parse(file);
             }
         } catch (err) {
-            console.log(red(`Error while reason the JSON config file ${this.file}`));
-            console.log(red(err));
+            console.log(chalk.red(`Error while reason the JSON config file ${this.file}`));
+            console.log(chalk.red(err));
             process.exit();
         }
         return returnData;
