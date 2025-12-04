@@ -1,11 +1,13 @@
-import * as chai from 'chai';
+import { assert, expect, use } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
+import { describe, it } from 'mocha';
 
 import { pageShots } from '../src/main.js';
 
-chai.use(chaiAsPromised);
-const {expect} = chai;
-const {assert} = chai;
+// Set up the chai-as-promised plugin
+use(chaiAsPromised);
+
+/* eslint-disable no-unused-expressions -- Some ofthe "expect" calls appear like unused expressions, but they are not */
 
 // Confirm that the base URL is properly set
 describe('setBaseUrl', () => {
@@ -209,7 +211,7 @@ describe('addSize', () => {
     it('should accept and array with multiple string sizes', () => {
         pageShots.sizes = [];
         pageShots.addSize(['1000x800', '800x600', '400x200']);
-        const {sizes} = pageShots;
+        const { sizes } = pageShots;
         expect(sizes).to.have.length(3);
         assert.equal(1000, sizes[0].width);
         assert.equal(800, sizes[0].height);
