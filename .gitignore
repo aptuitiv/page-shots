@@ -1,6 +1,14 @@
+# This includes files that will be ignored by git
+
+# For web projects we want to include the package-lock.json file so that everyone is working
+# with the same package files. We projects are not dependencies in other projects so this is ok.
+# Reference for that decision:
+# https://classic.yarnpkg.com/blog/2016/11/24/lockfiles-for-all/
+# https://dev.to/gajus/stop-using-package-lock-json-or-yarn-lock-3ddi
+# https://dev.to/saurabhdaware/but-what-the-hell-is-package-lock-json-b04
+
 .DS_Store
+.env
 .idea/
-package-lock.json
+.vscode/
 /node_modules/
-yarn.lock
-*.code-workspace
