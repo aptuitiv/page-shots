@@ -1,76 +1,76 @@
 {
-  "name": "page-shots",
-  "version": "1.1.0",
-  "description": "Take screenshots of multiple pages and in multiple sizes",
-  "main": "index.js",
-  "type": "module",
-  "scripts": {
-    "eslint": "eslint --fix --no-warn-ignored .",
-    "test": "mocha",
-    "watch": "watch-eslint  --fix --color ."
-  },
-  "bin": {
-    "page-shots": "./index.js"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/erictompkins/page-shots.git"
-  },
-  "keywords": [
-    "page",
-    "shot",
-    "shots",
-    "page-shot",
-    "page-shots",
-    "website",
-    "site",
-    "web",
-    "url",
-    "resolution",
-    "screenshot",
-    "screenshots",
-    "screengrab",
-    "screen",
-    "snapshot",
-    "image",
-    "render",
-    "html",
-    "capture",
-    "pic",
-    "picture"
-  ],
-  "engines": {
-    "node": ">=8"
-  },
-  "author": {
-    "name": "Eric Tompkins"
-  },
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/erictompkins/page-shots/issues"
-  },
-  "homepage": "https://github.com/erictompkins/page-shots#readme",
-  "dependencies": {
-    "chalk": "^5.6.2",
-    "commander": "^14.0.2",
-    "esm": "^3.2.25",
-    "fancy-log": "^2.0.0",
-    "fs-extra": "^11.3.2",
-    "log-symbols": "^7.0.1",
-    "ora": "^9.0.0",
-    "puppeteer": "^24.32.0",
-    "puppeteer-cluster": "^0.25.0",
-    "sanitize-filename": "^1.6.3"
-  },
-  "devDependencies": {
-    "@aptuitiv/eslint-config-aptuitiv": "^1.2.0",
-    "chai": "^6.2.1",
-    "chai-as-promised": "^8.0.2",
-    "eslint": "^9.38.0",
-    "mocha": "^11.7.5",
-    "watch-eslint": "^1.1.0"
-  }
+    "name": "@aptuitiv/page-shots",
+    "version": "1.1.0",
+    "description": "Take screenshots of multiple pages and in multiple sizes",
+    "main": "index.js",
+    "type": "module",
+    "scripts": {
+        "eslint": "eslint --fix --no-warn-ignored .",
+        "test": "mocha",
+        "watch": "watch-eslint  --fix --color ."
+    },
+    "bin": {
+        "page-shots": "./index.js"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/aptuitiv/page-shots.git"
+    },
+    "keywords": [
+        "page",
+        "shot",
+        "shots",
+        "page-shot",
+        "page-shots",
+        "website",
+        "site",
+        "web",
+        "url",
+        "resolution",
+        "screenshot",
+        "screenshots",
+        "screengrab",
+        "screen",
+        "snapshot",
+        "image",
+        "render",
+        "html",
+        "capture",
+        "pic",
+        "picture"
+    ],
+    "engines": {
+        "node": ">=8"
+    },
+    "author": {
+        "name": "Eric Tompkins"
+    },
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/aptuitiv/page-shots/issues"
+    },
+    "homepage": "https://github.com/aptuitiv/page-shots#readme",
+    "dependencies": {
+        "chalk": "^5.6.2",
+        "commander": "^14.0.2",
+        "esm": "^3.2.25",
+        "fancy-log": "^2.0.0",
+        "fs-extra": "^11.3.2",
+        "log-symbols": "^7.0.1",
+        "ora": "^9.0.0",
+        "puppeteer": "^24.32.0",
+        "puppeteer-cluster": "^0.25.0",
+        "sanitize-filename": "^1.6.3"
+    },
+    "devDependencies": {
+        "@aptuitiv/eslint-config-aptuitiv": "^1.2.0",
+        "chai": "^6.2.1",
+        "chai-as-promised": "^8.0.2",
+        "eslint": "^9.38.0",
+        "mocha": "^11.7.5",
+        "watch-eslint": "^1.1.0"
+    }
 }
