@@ -1,0 +1,77 @@
+# Based on the Github Actions on https://docusaurus.io/docs/deployment#triggering-deployment-with-github-actions
+
+# Make sure that under Settings -> Environments that the "develop" branch is allowed under "Deployment branches and tags".
+# If not then deploying to github-pages will fail with this message:
+# "Branch 'develop' is not allowed to deploy to github-pages due to environment protection rules."
+
+name: Deploy to GitHub Pages with Docusaurus
+
+on:
+    # Runs on pushes targeting the "main" branch but only for files in the "docs" folder.
+    push:
+        branches: ["main"]
+        paths: ["docs/**"]
+
+    # Allows you to run this workflow manually from the Actions tab
+    workflow_dispatch:
+
+defaults:
+    run:
+        shell: bash
+        working-directory: ./docs
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+# permissions:
+#     contents: read
+#     pages: write
+#     id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+    group: "pages"
+    cancel-in-progress: false
+
+jobs:
+    build:
+        name: Build Docusaurus
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 18
+                  cache: npm
+
+            - name: Install dependencies
+              run: npm install
+            - name: Build website
+              run: npm run build
+
+            - name: Upload Build Artifact
+              uses: actions/upload-pages-artifact@v3
+              with:
+                  # Only upload the docs folder
+                  path: "docs/build"
+
+    deploy:
+        name: Deploy to GitHub Pages
+        needs: build
+
+        # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
+        permissions:
+            pages: write # to deploy to Pages
+            id-token: write # to verify the deployment originates from an appropriate source
+
+        # Deploy to the github-pages environment
+        environment:
+            name: github-pages
+            url: ${{ steps.deployment.outputs.page_url }}
+
+        runs-on: ubuntu-latest
+        steps:
+            - name: Deploy to GitHub Pages
+              id: deployment
+              uses: actions/deploy-pages@v4
