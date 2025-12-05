@@ -57,9 +57,12 @@
     "chalk": "^5.6.2",
     "commander": "^14.0.2",
     "esm": "^3.2.25",
+    "fancy-log": "^2.0.0",
     "fs-extra": "^11.3.2",
+    "log-symbols": "^7.0.1",
     "ora": "^9.0.0",
     "puppeteer": "^24.32.0",
+    "puppeteer-cluster": "^0.25.0",
     "sanitize-filename": "^1.6.3"
   },
   "devDependencies": {

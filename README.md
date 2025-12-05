@@ -10,7 +10,7 @@ Page Shots is a command line interface for taking screenshots of one or more pag
 On the command line:
 
 ```
-page-shots -u https://www.branchcms.com
+page-shots -u https://www.aptuitiv.com
 ```
 
 There are, of course, a lot more configuration options.
@@ -61,7 +61,7 @@ Filenames and Directories
 
 By default the screenshot will be saved in the same directory that you call the command in and by default the file name will be based on the URL of the page. Also, by default, the screenshot will be a jpg image.
 
-For example, if the URL is `https://www.branchcms.com` then the file name will be `www-branchcms-com.jpg`.
+For example, if the URL is `https://www.aptuitiv.com` then the file name will be `www-branchcms-com.jpg`.
 
 You can specify a file name for the screenshot. The file name can be just the name without the extension, or if can include the "jpg" or "png" extension. If the file name does not have an extension or it doesn't match either "jpg" or "png" extension then the correct extension based on the `type` argument will be used.
 
@@ -152,7 +152,7 @@ Command Line Options
 | <pre>-d, --dir</pre>     | The directory relative to where the script is run to output the screenshots to. |
 | <pre>-D, --delay</pre>   | The number of milliseconds to delay after loading before taking a picture of the page. Can't be larger than 30000. |
 | <pre>-f, --fit</pre>     | Fit the screenshot to the provided height and width. |
-| <pre>-H, --height</pre>  | Integer height of the viewport to take the screenshot in. Use `--fit` if you want the screenshot to only capture the viewport width and height. Defaults to `900`. |
+| <pre>-h, --height</pre>  | Integer height of the viewport to take the screenshot in. Use `--fit` if you want the screenshot to only capture the viewport width and height. Defaults to `900`. |
 | <pre>--jpg</pre>         | Set the image type for screenshots to be `jpg`. Alternate method to using `-t`. |
 | <pre>-n, --name</pre>    | The name of the file to save the screenshot as. It can also be a [name format](#dynamic-file-names) that will be used to build the filename for each screenshot. If you're not setting a name format, then the name only applies to the first URL so it's only useful if getting just one screenshot. |
 | <pre>--png</pre>         | Set the image type for screenshots to be `png`. Alternate method to using `-t`. |
@@ -160,7 +160,7 @@ Command Line Options
 | <pre>-t, --type</pre>    | The file type to use for the screenshots. `jpg` or `png`. Defaults to `jpg`. |
 | <pre>-q, --quality</pre> | The quality of the jpg image, between 0-100. Not applicable to png image. Defaults to `100`. |
 | <pre>-u, --url</pre>     | URL to get the screenshot of. You can specify this parameter multiple times to get a screenshot of multiple web pages. |
-| <pre>-W, --width</pre>   | Integer width of the viewport to take the screenshot in. Defaults to `1300`. |
+| <pre>-w, --width</pre>   | Integer width of the viewport to take the screenshot in. Defaults to `1300`. |
 | <pre>-v, --version</pre> | Output the version number. |
 | <pre>--clipH</pre>       | The height of the clip area. |
 | <pre>--clipW</pre>       | The width of the clip area. |
@@ -180,67 +180,67 @@ page-shots [options]
 ### Get a screenshot of just one URL and output it in the same directory.
 
 ```
-page-shots -u https://www.branchcms.com
+page-shots -u https://www.aptuitiv.com
 ```
 
 ### Get a screenshot of just one URL and specify the directory and file name.
 
 ```
-page-shots -u https://www.branchcms.com -d screenshots -n home
+page-shots -u https://www.aptuitiv.com -d screenshots -n home
 ```
 
 ### Get a screenshot of just one URL and specify the directory and file name. The file will be saved as a "png" because of the file name extension.
 
 ```
-page-shots -u https://www.branchcms.com -d screenshots -n home.jpg
+page-shots -u https://www.aptuitiv.com -d screenshots -n home.jpg
 ```
 
 ### Specify a file name format
 
 ```
-page-shots -u https://www.branchcms.com -n home-{width}
+page-shots -u https://www.aptuitiv.com -n home-{width}
 ```
 
 ### Specify a file name format and set the image to be a png based on the file name
 
 ```
-page-shots -u https://www.branchcms.com -n home-{width}.png
+page-shots -u https://www.aptuitiv.com -n home-{width}.png
 ```
 
 ### Get screenshots for multiple URLs and save to a specific directory.
 
 ```
-page-shots -u https://www.branchcms.com -u https://www.aptuitiv.com -d screenshots
+page-shots -u https://www.aptuitiv.com -u https://www.aptuitiv.com -d screenshots
 ```
 
 ### Set a base URL and get a screenshot of multiple URLs in the same website.
 
 ```
-page-shots -b https://www.branchcms.com -u /pricing -u / -u /docs
+page-shots -b https://www.aptuitiv.com -u /pricing -u / -u /docs
 ```
 
 ### Save the screenshot as a png image.
 
 ```
-page-shots -u https://www.branchcms.com -t png
+page-shots -u https://www.aptuitiv.com -t png
 ```
 
 ### Change the image quality for the jpg screenshot to 80.
 
 ```
-page-shots -u https://www.branchcms.com -q 80
+page-shots -u https://www.aptuitiv.com -q 80
 ```
 
 ### Capture a smaller screen size to simulate a mobile device.
 
 ```
-page-shots -u https://www.branchcms.com -W 415
+page-shots -u https://www.aptuitiv.com -w 415
 ```
 
 ### Get a screenshot at a specific height and width.
 
 ```
-page-shots -u https://www.branchcms.com -W 1200 -H 800 --fit
+page-shots -u https://www.aptuitiv.com -w 1200 -h 800 --fit
 ```
 
 ### Set the screenshot size using the `size` argument.
@@ -254,7 +254,7 @@ There should not be a space between the width, the "x", and the height.
 Set the width to be 1000px and the height to be 600px.
 
 ```
-page-shots -u https://www.branchcms.com -s 1000x600
+page-shots -u https://www.aptuitiv.com -s 1000x600
 ```
 
 ### Set multiple screenshot sizes.
@@ -269,19 +269,19 @@ The following will set the following screenshot sizes:
 > Because the `--fit` parameter is not set only the width actually applies to the screenshot.
 
 ```
-page-shots -u https://www.branchcms.com -s 1000x600 -s 600x600 -s 400x800
+page-shots -u https://www.aptuitiv.com -s 1000x600 -s 600x600 -s 400x800
 ```
 
 ### Delay for 3 seconds after loading the page before taking the screenshot
 
 ```
-page-shots -u https://www.branchcms.com -W 1200 --delay 3000
+page-shots -u https://www.aptuitiv.com -w 1200 --delay 3000
 ```
 
 ### Capture just a clip on the page 100px down from the top that is 900px wide and 400px tall.
 
 ```
-page-shots -u https://www.branchcms.com -W 1200 --clipH 400 --clipW 900 --clipX 0 --clipY 100
+page-shots -u https://www.aptuitiv.com -w 1200 --clipH 400 --clipW 900 --clipX 0 --clipY 100
 ```
 
 
@@ -297,8 +297,8 @@ Below is an example JSON file:
 {
     "name": "{url}-{width}-{height}.png",
     "urls": [
-        "https://www.branchcms.com",
-        "https://www.branchcms.com/pricing",
+        "https://www.aptuitiv.com",
+        "https://www.aptuitiv.com/pricing",
         "https://www.aptuitiv.com"
     ],
     "sizes": [
@@ -347,7 +347,7 @@ Below is the bare minimum necessary in the JSON file.
 ```
 {
     "urls": [
-        "https://www.branchcms.com"
+        "https://www.aptuitiv.com"
     ]
 }
 ```
@@ -410,7 +410,7 @@ You wouldn't use all of the options as some of them override other options. For 
 
 ```
 {
-    "baseUrl": "https://www.branchcms.com",
+    "baseUrl": "https://www.aptuitiv.com",
     "clip": {"x": 20, "y": 105, "w": 800, "h": 400},
     "delay": 400,
     "dir": "screenshots",

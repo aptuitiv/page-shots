@@ -7,14 +7,20 @@ import ora from 'ora';
 /**
  * Initialize the JSON file used to configure the URLs to get screenshots of
  */
-class InitJson {
+const initJson = {
     /**
-     * Constructor
+     * The name of the directory to save the file in
+     *
+     * @type {string}
      */
-    constructor() {
-        this.dir = '';
-        this.filename = 'shots.json';
-    }
+    dir: '',
+
+    /**
+     * The name of the file to save the JSON file as
+     *
+     * @type {string}
+     */
+    filename: 'shots.json',
 
     /**
      * Set the name of the directory to save the file in
@@ -23,15 +29,15 @@ class InitJson {
      */
     setDir(dir) {
         if (typeof dir === 'string') {
-            dir = dir.trim();
-            if (dir.length > 1) {
-                if (dir.substring(dir.length - 1) !== '/') {
-                    dir = `${dir}/`;
+            let directory = dir.trim();
+            if (directory.length > 1) {
+                if (directory.substring(directory.length - 1) !== '/') {
+                    directory = `${directory}/`;
                 }
-                this.dir = dir;
+                this.dir = directory;
             }
         }
-    }
+    },
 
     /**
      * Set the file name for the JSON file
@@ -40,12 +46,13 @@ class InitJson {
      */
     setFilename(name) {
         const ext = extname(name).toLowerCase().replace('.', '');
+        let filename = name;
         if (ext !== 'json') {
-            name += '.json';
+            filename += '.json';
         }
-        name = sanitize(name, { replacement: '-' })
-        this.filename = name;
-    }
+        filename = sanitize(filename, { replacement: '-' })
+        this.filename = filename;
+    },
 
     /**
      * Builds and saves the json file
@@ -70,5 +77,4 @@ class InitJson {
     }
 }
 
-const init = new InitJson();
-export default init;
+export default initJson;
