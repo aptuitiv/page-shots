@@ -1,0 +1,17 @@
+# Put files to ignore by Prettier here. https://prettier.io/docs/en/ignore.html
+
+# Ignore markdown files. They conflict with other markdown formatting rules.
+*.md
+.eslintignore
+
+# Ignore package-lock
+package-lock.json
+
+# Ignore HTML files. Specifically template html files
+*.html
+
+# Ignore specific directories
+/_build/
+/_export/
+/dist/
+/node_modules/
