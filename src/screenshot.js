@@ -9,6 +9,7 @@ import sanitize from 'sanitize-filename';
 
 // Library
 import { logError, logMessage, logSuccess } from './lib/log.js';
+import { getElapsedTime, getStartTime } from './lib/time.js';
 import { isBoolean, isDefined, isStringWithValue } from './lib/types.js';
 
 /**
@@ -31,7 +32,7 @@ const screenshot = {
         this.config = config;
 
         try {
-            const startTime = process.hrtime();
+            const startTime = getStartTime();
 
             // The puppeteer-cluster library is used to launch a cluster of browsers and pages to get the screenshots.
             // This enables us to get the screenshots faster by using multiple browsers and pages in parallel.
@@ -157,8 +158,7 @@ const screenshot = {
             await cluster.close();
 
             // Output the total time it took to get the screenshots
-            const diff = process.hrtime(startTime);
-            const time = diff[0] + diff[1] / 1e9;
+            const time = getElapsedTime(startTime);
             logMessage(`Total time to get screenshots: ${time}s`);
         } catch (err) {
             logError(`Error getting screenshots`, err);
@@ -180,12 +180,11 @@ const screenshot = {
      * @param page.data
      */
     async getScreenshot(page, url) {
-        const pageStartTime = process.hrtime();
+        const pageStartTime = getStartTime();
         // Set up the page load event listener
         page.on('load', () => {
             // Get the page elapsed time
-            const diff = process.hrtime(pageStartTime);
-            const time = diff[0] + diff[1] / 1e9;
+            const time = getElapsedTime(pageStartTime);
             logSuccess(`${url.url} loaded in ${time}s`);
         });
 
