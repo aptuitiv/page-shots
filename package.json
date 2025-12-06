@@ -68,6 +68,7 @@
     },
     "devDependencies": {
         "@aptuitiv/eslint-config-aptuitiv": "^1.2.0",
+        "@types/fancy-log": "^2.0.2",
         "@types/fs-extra": "^11.0.4",
         "chai": "^6.2.1",
         "chai-as-promised": "^8.0.2",
