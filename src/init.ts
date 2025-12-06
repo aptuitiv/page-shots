@@ -27,7 +27,7 @@ const initJson = {
      *
      * @param {string} dir The name of the diectory to save the file in
      */
-    setDir(dir) {
+    setDir(dir: string) {
         if (typeof dir === 'string') {
             let directory = dir.trim();
             if (directory.length > 1) {
@@ -44,13 +44,13 @@ const initJson = {
      *
      * @param {string} name The filename for the JSON file
      */
-    setFilename(name) {
+    setFilename(name: string) {
         const ext = extname(name).toLowerCase().replace('.', '');
         let filename = name;
         if (ext !== 'json') {
             filename += '.json';
         }
-        filename = sanitize(filename, { replacement: '-' })
+        filename = sanitize(filename, { replacement: '-' });
         this.filename = filename;
     },
 
@@ -63,18 +63,19 @@ const initJson = {
             name: '{url}-{width}',
             type: 'jpg',
             urls: [],
-            sizes: [
-                '1300x800'
-            ]
-        }
+            sizes: ['1300x800'],
+        };
         const filePath = join(this.dir, this.filename),
-            spinner = ora({ text: `Creating ${this.filename}`, spinner: 'arc' }).start();
+            spinner = ora({
+                text: `Creating ${this.filename}`,
+                spinner: 'arc',
+            }).start();
 
         const writeStream = createWriteStream(filePath, { flags: 'w' });
         writeStream.write(JSON.stringify(json, null, 4));
         writeStream.close();
         spinner.succeed(chalk.green(`${this.filename} created`));
-    }
-}
+    },
+};
 
 export default initJson;
