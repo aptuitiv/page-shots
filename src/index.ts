@@ -7,8 +7,10 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 // Library
-import config from './config.js';
+import { ConfigParser, maxDelay } from './config.js';
+import { logError, logSuccess } from './lib/log.js';
 import init from './init.js';
+import screenshot from './screenshot.js';
 
 // Get the directory name of the current module
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -35,7 +37,7 @@ program
     )
     .option(
         '-D, --delay <integer>',
-        `The number of milliseconds to delay after loading before taking a picture of the page. Can not be greater than ${config.maxDelay}.`
+        `The number of milliseconds to delay after loading before taking a picture of the page. Can not be greater than ${maxDelay}.`
     )
     .option(
         '-d, --dir <string>',
@@ -49,7 +51,7 @@ program
     )
     .option(
         '--jpg',
-        'Set the image type for screenshots to be "jpg". Alternate method to using -t.'
+        'Set the image type for screenshots to be "jpg". Alternate method to using --type.'
     )
     .option(
         '-n, --name <string>',
@@ -91,7 +93,23 @@ program
         'The y-coordinate of top-left corner of clip area.'
     )
     .action((options) => {
-        console.log('options', options);
+        const configParser = new ConfigParser();
+        configParser.setProcessConfigFile();
+        configParser.parse(options);
+        if (configParser.hasUrls()) {
+            screenshot
+                .run(configParser.getConfig())
+                .then(() => {
+                    logSuccess('All screenshots have been taken.');
+                })
+                .catch((err) => {
+                    logError('Error getting screenshots: ', err);
+                });
+        } else {
+            logError(
+                'No URLs were provided to get screenshots of. Nothing to do.'
+            );
+        }
     });
 
 // Custom help output

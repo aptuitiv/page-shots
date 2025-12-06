@@ -12,6 +12,7 @@ import {
     objectValueIsStringWithValue,
 } from './lib/object.js';
 import {
+    BoolLike,
     isBoolLike,
     isDefined,
     isNumberOrNumberString,
@@ -20,7 +21,134 @@ import {
     isTrueLike,
 } from './lib/types.js';
 
-const config = {
+// The clip parameter type
+type ClipParam = {
+    x: string | number;
+    y: string | number;
+    width: string | number;
+    height: string | number;
+};
+
+// The base configuration parameters without the "sizes" or "urls" properties because
+// those can include these configuration parameters.
+type BaseConfigParam = {
+    // The base URL to prepend to each URL if necessary
+    base?: string; // CLI argument
+    baseUrl?: string; // JSON config
+    // Holds an object which specifies clipping region of the page.
+    clip?: ClipParam; // JSON config
+    // The x coordinate of the clipping region
+    clipX?: string | number;
+    // The y coordinate of the clipping region
+    clipY?: string | number;
+    // The width of the clipping region
+    clipWidth?: string | number;
+    // The height of the clipping region
+    clipHeight?: string | number;
+    // The name of the JSON config file to use to get the screenshots. If this is set all other arguments are ignored.
+    config?: string;
+    // The number of milliseconds to delay after loading before taking a picture of the page. Can not be greater than 30000.
+    delay?: number | string;
+    // The directory that screenshots are saved in
+    dir?: string;
+    // Whether or not to fit the screenshot to the provided height and width.
+    fit?: BoolLike;
+    // Whether or not to get a full page screenshot. Alternate to "fullscreen" and"fit".
+    full?: BoolLike;
+    // Whether or not to get a full page screenshot. Alternate to "full" and "fit".
+    fullscreen?: BoolLike;
+    // The height of the viewport to take the screenshot in
+    height?: number | string;
+    // Whether or not to save the screenshot as a jpg
+    jpg?: BoolLike;
+    // The name of the file to save the screenshot as. Only applies to the first URL.
+    name?: string;
+    // Whether or not to save the screenshot as a png
+    png?: BoolLike;
+    // The image quality if the screenshot is a jpg
+    quality?: number | string;
+    // The file type to use for the screenshots
+    type?: string;
+    // The list of URLs to get screenshots for
+    urls?: string[]; // JSON config
+    // The width of the viewport to take the screenshot in
+    width?: number | string;
+};
+
+// The size object type if the size parameter is an object
+type SizeObject = BaseConfigParam & {
+    // The height of the viewport to take the screenshot in
+    height: number | string;
+    // The width of the viewport to take the screenshot in
+    width: number | string;
+};
+
+// The size value type
+type SizeValue = string | string[] | SizeObject;
+
+// The URL object type if the URL parameter is an object
+type UrlObject = BaseConfigParam & {
+    url: string;
+};
+
+// The URL value type
+type UrlValue = string | UrlObject;
+
+type ConfigParam = BaseConfigParam & {
+    // Holds one or more viewport sizes to get the screenshot in
+    size?: SizeValue;
+    sizes?: SizeValue;
+    // The list of URLs to get screenshots for
+    url?: UrlValue; // This will be an array from the CLI arguments
+    // The list of URLs to get screenshots for
+    urls?: UrlValue[]; // JSON config
+};
+
+// The clip type
+type Clip = {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+};
+
+// The base configuration type. This is the configuration object without the "sizes" or "urls" properties because
+// those can include these configuration parameters.
+type BaseConfig = {
+    baseUrl: string;
+    clip: false | Clip;
+    delay: number | string;
+    dir: string;
+    fileName: string;
+    fileType: string;
+    fullScreen: boolean;
+    height: number;
+    nameFormat: string;
+    quality: number;
+    width: number;
+};
+
+// The size configuration type. This is the configuration object for a single size.
+// Partial makes all properties of BaseConfig optional.
+type SizeConfig = Partial<BaseConfig> & {
+    height: number;
+    width: number;
+};
+
+// The URL configuration type. This is the configuration object for a single URL.
+// Partial makes all properties of BaseConfig optional.
+type UrlConfig = Partial<BaseConfig> & {
+    url: string;
+};
+
+// The configuration type
+export type Config = BaseConfig & {
+    sizes: SizeConfig[];
+    urls: UrlConfig[];
+};
+
+// Default configuration
+export const defaultConfig: Config = {
     // The base URL to prepend to each URL if necessary
     baseUrl: '',
     // Holds an object which specifies clipping region of the page.
@@ -39,8 +167,6 @@ const config = {
     fullScreen: true,
     // Holds the viewport height to get the screenshot in
     height: 900,
-    // Maximum delay in milliseconds
-    maxDelay: 30000,
     // The format to generate the file name from
     nameFormat: '{url}-{width}',
     // The image quality if the screenshot is a jpg
@@ -51,237 +177,406 @@ const config = {
     urls: [],
     // Holds the viewport width to get the screenshot in
     width: 1300,
+};
 
-    /**
-     * Set the base URL
-     *
-     * @param {string} url The base URL to prepend to each URL if necessary
-     */
-    setBaseUrl(url) {
-        if (isStringWithValue(url)) {
-            // Remove the trailing slash if it exists
-            this.baseUrl = url.replace(/\/$/, '');
+// Maximum delay in milliseconds
+export const maxDelay = 30000;
+
+/**
+ * Processes the height or width value
+ *
+ * @param {string|number} value The height or width value to process
+ * @returns {number} The processed height or width value
+ */
+const processHeightWidth = (value: string | number): number => {
+    let returnValue = 0;
+    if (isNumberOrNumberString(value)) {
+        const size = parseInt(value.toString(), 10);
+        if (size > 0) {
+            returnValue = size;
         }
-    },
+    }
+    return returnValue;
+};
 
-    /**
-     * Set the clip object
-     *
-     * @param {object} clip The clip object to set
-     */
-    setClip(clip) {
-        this.clip = this.processClip(clip);
-    },
-
-    /**
-     * Processes the clip object
-     *
-     * @param {object} clip The clip object to process
-     * @returns {object|boolean} The processed clip object or false if the clip is not valid
-     */
-    processClip(clip) {
-        let returnValue = false;
-        if (
-            objectValueIsNumberOrNumberString(clip, 'x') &&
-            objectValueIsNumberOrNumberString(clip, 'y') &&
-            objectValueIsNumberOrNumberString(clip, 'w') &&
-            objectValueIsNumberOrNumberString(clip, 'h')
-        ) {
-            const x = parseInt(clip.x, 10);
-            const y = parseInt(clip.y, 10);
-            const w = parseInt(clip.w, 10);
-            const h = parseInt(clip.h, 10);
-            if (x >= 0 && y >= 0 && w > 0 && h > 0) {
-                returnValue = {
-                    x,
-                    y,
-                    width: w,
-                    height: h,
-                };
+/**
+ * Validates that the file type is allowed
+ *
+ * @param {string} type The file type
+ * @returns {string|boolean} The valid file type or false if the type is not valid
+ */
+const validateFileType = (type: string): string | false => {
+    let returnVal: string | false = false;
+    if (isStringWithValue(type)) {
+        let fileType = type.toLowerCase().replace('.', '');
+        if (['jpg', 'jpeg', 'png'].includes(fileType)) {
+            if (fileType === 'jpeg') {
+                fileType = 'jpg';
             }
+            returnVal = fileType;
         }
-        return returnValue;
-    },
+    }
+    return returnVal;
+};
+
+// Configuration object
+export class ConfigParser {
+    /**
+     * Holds the configuration data.
+     *
+     * It defaults to the default configuration.
+     * As each configuration param is processed, this will be updated with the new values.
+     *
+     * @type {Config}
+     */
+    config: Config;
 
     /**
-     * Sets the number of milliseconds to delay after loading a page before taking a screenshot
+     * Holds the configuration data being worked on.
      *
-     * @param {number} value The number of milliseconds to delay
+     * @type {ConfigParam}
      */
-    setDelay(value) {
-        const delay = this.processDelay(value);
-    },
+    configParam: ConfigParam;
 
     /**
-     * Processes the delay value
+     * Holds whether or not to process the configuration URL if it's included in the config data.
      *
-     * @param {number} value The number of milliseconds to delay
-     * @returns {number} The processed delay value
+     * @type {boolean}
      */
-    processDelay(value) {
-        let returnValue = 0;
-        if (isNumberOrNumberString(value)) {
-            let delay = parseInt(value, 10);
-            if (delay > 0) {
-                if (delay > this.maxDelay) {
-                    delay = this.maxDelay;
+    processFile: boolean;
+
+    /**
+     * Holds whether or not to process the configuration sizes if it's included in the config data.
+     *
+     * @type {boolean}
+     */
+    processSizes: boolean;
+
+    /**
+     * Holds whether or not to process the configuration URLs if it's included in the config data.
+     *
+     * @type {boolean}
+     */
+    processUrls: boolean;
+
+    /**
+     * Constructor
+     *
+     * @param {Config} baseConfig The default configuration to use instead of the core default configuration
+     */
+    constructor(baseConfig?: Config) {
+        this.config = baseConfig ?? defaultConfig;
+        this.processFile = false;
+        this.processSizes = true;
+        this.processUrls = true;
+    }
+
+    /**
+     * Set that the configuration file should be processed if it's included in the config data.
+     */
+    setProcessConfigFile() {
+        this.processFile = true;
+    }
+
+    /**
+     * Set that the configuration sizes should be processed if it's included in the config data.
+     */
+    setDoNotProcessSizes() {
+        this.processSizes = false;
+    }
+
+    /**
+     * Set that the configuration URLs should be processed if it's included in the config data.
+     */
+    setDoNotProcessUrls() {
+        this.processUrls = false;
+    }
+
+    /**
+     * Parse the configuration data
+     *
+     * @param {ConfigParam} data The configuration data to parse
+     */
+    parse(data: ConfigParam) {
+        if (isObjectWithValues(data)) {
+            // If the configuration file is set in the configuration data
+            // and the processConfigFile flag is set, parse the configuration file first.
+            if (this.setProcessConfigFile && isStringWithValue(data?.config)) {
+                this.#parseFile(data.config);
+            }
+
+            // Parse the configuration data
+            this.#parseConfig(data);
+        }
+    }
+
+    /**
+     * Parse the JSON config file and merge it with the current config
+     *
+     * @param {string} file The name of the JSON config file to parse
+     */
+    #parseFile(file: string) {
+        try {
+            let configFile = 'shots.json';
+            if (typeof file === 'string' && file.length > 0) {
+                configFile = file;
+                const ext = extname(file).toLowerCase().replace('.', '');
+                if (ext.length === 0) {
+                    configFile += '.json';
                 }
-                returnValue = delay;
+            }
+            if (fs.existsSync(configFile)) {
+                this.#parseConfig(fs.readJsonSync(configFile));
+            } else {
+                logError(
+                    `The JSON config file "${configFile}" could not be found`
+                );
+            }
+        } catch (err) {
+            logError(
+                `Error while processing the JSON config file ${file}`,
+                err
+            );
+            process.exit();
+        }
+    }
+
+    /**
+     * Parse the configuration data
+     *
+     * @param {ConfigParam} data The configuration data to parse
+     */
+    #parseConfig(data: ConfigParam) {
+        this.configParam = data;
+        this.#setBaseUrl();
+        this.#setClip();
+        this.#setDelay();
+        this.#setDir();
+        this.#setFileName();
+        this.#setFileType();
+        this.#setFullScreen();
+        this.#setHeight();
+        this.#setQuality();
+        if (this.processUrls) {
+            this.#setUrls();
+        }
+        if (this.processSizes) {
+            this.#setViewportSizes();
+        }
+        this.#setWidth();
+    }
+
+    /**
+     * Get the configuration
+     *
+     * @returns {Config} The configuration
+     */
+    getConfig(): Config {
+        return this.config;
+    }
+
+    /**
+     * Checks if the configuration has URLs
+     *
+     * @returns {boolean}
+     */
+    hasUrls(): boolean {
+        return this.config.urls.length > 0;
+    }
+
+    /**
+     * Set the base URL value
+     *
+     */
+    #setBaseUrl() {
+        if (isStringWithValue(this.configParam?.base)) {
+            this.config.baseUrl = this.configParam.base;
+        } else if (isStringWithValue(this.configParam?.baseUrl)) {
+            this.config.baseUrl = this.configParam.baseUrl;
+        }
+    }
+
+    /**
+     * Set the clip data
+     */
+    #setClip() {
+        if (isObjectWithValues<Clip>(this.configParam?.clip)) {
+            if (
+                objectValueIsNumberOrNumberString(this.configParam.clip, 'x') &&
+                objectValueIsNumberOrNumberString(this.configParam.clip, 'y') &&
+                objectValueIsNumberOrNumberString(this.configParam.clip, 'w') &&
+                objectValueIsNumberOrNumberString(this.configParam.clip, 'h')
+            ) {
+                const x = parseInt(this.configParam.clip.x.toString(), 10);
+                const y = parseInt(this.configParam.clip.y.toString(), 10);
+                const w = parseInt(this.configParam.clip.width.toString(), 10);
+                const h = parseInt(this.configParam.clip.height.toString(), 10);
+                if (x >= 0 && y >= 0 && w > 0 && h > 0) {
+                    this.config.clip = {
+                        x,
+                        y,
+                        width: w,
+                        height: h,
+                    };
+                }
+            }
+        } else if (
+            isNumberOrNumberString(this.configParam?.clipWidth) &&
+            isNumberOrNumberString(this.configParam?.clipHeight)
+        ) {
+            const clipX = isNumberOrNumberString(this.configParam?.clipX)
+                ? this.configParam.clipX
+                : 0;
+            const clipY = isNumberOrNumberString(this.configParam?.clipY)
+                ? this.configParam.clipY
+                : 0;
+            const x = parseInt(clipX.toString(), 10);
+            const y = parseInt(clipY.toString(), 10);
+            const w = parseInt(this.configParam.clipWidth.toString(), 10);
+            const h = parseInt(this.configParam.clipHeight.toString(), 10);
+            if (x >= 0 && y >= 0 && w > 0 && h > 0) {
+                this.config.clip = { x, y, width: w, height: h };
             }
         }
-        return returnValue;
-    },
+    }
 
     /**
-     * Set the directory to save the screenshots to
+     * Set the delay value
      *
-     * @param {string} dir The directory to set
      */
-    setDir(dir) {
-        this.dir = this.processDir(dir);
-    },
-
-    /**
-     * Processes the directory value
-     *
-     * @param {string} dir The directory value to process
-     * @returns {string} The processed directory value
-     */
-    processDir(dir) {
-        let returnValue = '';
-        if (isStringWithValue(dir)) {
-            returnValue = dir.replace(/\/$/, '');
-        }
-        return returnValue;
-    },
-
-    /**
-     * Set the file type to save the screenshots as
-     *
-     * @param {string} type The file type to save the screenshots as
-     */
-    setFileType(type) {
-        const fileType = this.validateFileType(type);
-        if (fileType) {
-            this.fileType = fileType;
-        }
-    },
-
-    /**
-     * Sets whether or not to get a full page screenshot
-     *
-     * @param {string|boolean} value The full screen value to set
-     */
-    setFullScreen(value) {
-        if (isTrueLike(value)) {
-            this.fullScreen = true;
-        } else {
-            this.fullScreen = false;
-        }
-    },
-
-    /**
-     * Sets the height of the viewport to take the screenshot in
-     *
-     * @param {number} value The height value to set
-     */
-    setHeight(value) {
-        const height = this.processHeightWidth(value);
-        if (height > 0) {
-            this.height = height;
-        }
-    },
-
-    /**
-     * Processes the height or width value
-     *
-     * @param {number} value The height or width value to process
-     * @returns {number} The processed height or width value
-     */
-    processHeightWidth(value) {
-        let returnValue = 0;
-        if (isNumberOrNumberString(value)) {
-            const size = parseInt(value, 10);
-            if (size > 0) {
-                returnValue = size;
+    #setDelay() {
+        if (isNumberOrNumberString(this.configParam?.delay)) {
+            let delay = parseInt(this.configParam.delay.toString(), 10);
+            if (delay > 0) {
+                if (delay > maxDelay) {
+                    delay = maxDelay;
+                }
+                this.config.delay = delay;
             }
         }
-        return returnValue;
-    },
+    }
+
+    /**
+     * Set the directory value
+     *
+     */
+    #setDir() {
+        if (isStringWithValue(this.configParam?.dir)) {
+            this.config.dir = this.configParam.dir.replace(/\/$/, '');
+        }
+    }
 
     /**
      * Sets the file name for the first URL or the name pattern to use for all URLs
      *
-     * @param {string} name The file name
      */
-    setFileName(name) {
-        if (isStringWithValue(name)) {
-            if (name.includes('{')) {
+    #setFileName() {
+        if (isStringWithValue(this.configParam?.name)) {
+            if (this.configParam.name.includes('{')) {
                 /**
                  * The name includes placeholders and it's a pattern for all URLs.
                  * Set it as the new name format
                  */
-                this.nameFormat = name;
+                this.config.nameFormat = this.configParam.name;
             } else {
                 // The file name is an explicit file name.
                 // Set the file type and file name
-                const fileType = this.validateFileType(extname(name));
-                this.fileName = name;
+                const fileType = validateFileType(
+                    extname(this.configParam.name)
+                );
+                this.config.fileName = this.configParam.name;
                 if (fileType) {
-                    this.fileType = fileType;
+                    this.config.fileType = fileType;
                 }
             }
         }
-    },
+    }
+
+    /**
+     * Set the file type to save the screenshots as
+     *
+     */
+    #setFileType() {
+        if (isStringWithValue(this.configParam?.type)) {
+            let fileType = validateFileType(this.configParam.type);
+            if (fileType) {
+                if (fileType === 'jpg') {
+                    // puppeteer uses 'jpeg' instead of 'jpg'
+                    fileType = 'jpeg';
+                }
+                this.config.fileType = fileType;
+            }
+        }
+        if (isTrueLike(this.configParam?.jpg)) {
+            this.config.fileType = 'jpeg';
+        }
+        if (isTrueLike(this.configParam?.png)) {
+            this.config.fileType = 'png';
+        }
+    }
+
+    /**
+     * Sets whether or not to get a full page screenshot
+     *
+     */
+    #setFullScreen() {
+        let fullScreen: BoolLike = true;
+        if (isBoolLike(this.configParam?.fit)) {
+            fullScreen = this.configParam.fit;
+        } else if (isBoolLike(this.configParam?.fullscreen)) {
+            fullScreen = this.configParam.fullscreen;
+        } else if (isBoolLike(this.configParam?.full)) {
+            fullScreen = this.configParam.full;
+        }
+        if (isTrueLike(fullScreen)) {
+            this.config.fullScreen = true;
+        } else {
+            this.config.fullScreen = false;
+        }
+    }
+
+    /**
+     * Sets the height of the viewport to take the screenshot in
+     */
+    #setHeight() {
+        const height = processHeightWidth(this.configParam?.height);
+        if (height > 0) {
+            this.config.height = height;
+        }
+    }
 
     /**
      * Sets the quality to save jpg images as
-     *
-     * @param {number} value The quality value to set
      */
-    setQuality(value) {
-        this.quality = this.processQuality(value);
-    },
-
-    /**
-     * Processes the quality value
-     *
-     * @param {number} value The quality value to process
-     * @returns {number} The processed quality value
-     */
-    processQuality(value) {
-        let returnValue = 100;
-        if (isNumberOrNumberString(value)) {
-            const quality = parseInt(value, 10);
+    #setQuality() {
+        if (isNumberOrNumberString(this.configParam?.quality)) {
+            const quality = parseInt(this.configParam.quality.toString(), 10);
             if (quality > 0 && quality <= 100) {
-                returnValue = quality;
+                this.config.quality = quality;
             }
         }
-        return returnValue;
-    },
+    }
 
     /**
      * Sets one or more URLs
-     *
-     * @param {Array | string} urls The URL(s) to set
      */
-    setUrls(urls) {
-        // Reset the URLs array
-        this.urls = [];
-        if (Array.isArray(urls)) {
-            for (const url of urls) {
-                const configuredUrl = this.configureUrl(url);
-                if (isObjectWithValues(configuredUrl)) {
-                    this.urls.push(configuredUrl);
-                }
+    #setUrls() {
+        if (Array.isArray(this.configParam?.urls)) {
+            this.config.urls = [];
+            for (const url of this.configParam.urls) {
+                this.#configureUrl(url);
             }
-        } else if (isStringWithValue(urls)) {
-            const configuredUrl = this.configureUrl(urls);
-            if (isObjectWithValues(configuredUrl)) {
-                this.urls.push(configuredUrl);
+        } else if (isStringWithValue(this.configParam?.urls)) {
+            this.#configureUrl(this.configParam.urls);
+        } else if (Array.isArray(this.configParam?.url)) {
+            this.config.urls = [];
+            for (const url of this.configParam.url) {
+                this.#configureUrl(url);
             }
+        } else if (isStringWithValue(this.configParam?.url)) {
+            this.#configureUrl(this.configParam.url);
         }
-    },
+    }
 
     /**
      * Configures the URL object
@@ -292,23 +587,28 @@ const config = {
      * If the URL is an object and the name is not set, the file name will be used.
      * If the URL is an object and the type is not set, the file type will be used.
      *
-     * @param {string|object} url The URL to configure
-     * @returns {object|boolean} The URL object or false if the URL is not valid
+     * @param {UrlValue} url The URL to configure
      */
-    configureUrl(url) {
-        let returnValue = false;
+    #configureUrl(url: UrlValue) {
         if (
-            isObjectWithValues(url) &&
+            isObjectWithValues<UrlObject>(url) &&
             objectValueIsStringWithValue(url, 'url')
         ) {
-            returnValue = url;
+            this.config.urls.push(url as UrlConfig);
+            // const configObj = new ConfigParser();
+            // configObj.setDoNotProcessUrls();
+            // configObj.parse(url);
+            // const config = configObj.getConfig();
+            // delete config.urls;
+            // const urlConfig: UrlConfig = {
+            //     ...config,
+            //     url: url.url,
+            // };
+            // this.config.urls.push(urlConfig);
         } else if (isStringWithValue(url)) {
-            returnValue = {
-                url,
-            };
+            this.config.urls.push({ url });
         }
-        return returnValue;
-    },
+    }
 
     /**
      * Set one or more viewport sizes
@@ -320,189 +620,84 @@ const config = {
      * ['1200x560', '600x400']
      * [{width: 1200, height: 560}, {width: 600, height: 400}]
      *
-     * It can also be set as an object that contains the width and height values.
+     * It can also be set as an object that contains the width and height values and other configuration values.
      * {width: 1200, height: 560}
-     *
-     * @param {string|Array|object} sizes The viewport size(s) to set
      */
-    setViewportSizes(sizes) {
-        this.sizes = this.processViewportSizes(sizes);
-    },
+    #setViewportSizes() {
+        if (isDefined(this.configParam?.sizes)) {
+            this.#processViewportSizes(this.configParam.sizes);
+        } else if (isDefined(this.configParam?.size)) {
+            this.#processViewportSizes(this.configParam.size);
+        }
+    }
 
     /**
      * Processes the viewport sizes
      *
-     * @param {string|Array|object} sizes The viewport size(s) to process
-     * @returns {Array} The processed viewport sizes
+     * @param {SizeValue} sizes The viewport size(s) to process
      */
-    processViewportSizes(sizes) {
-        const returnValue = [];
+    #processViewportSizes(sizes: SizeValue) {
         if (isStringWithValue(sizes)) {
-            const configuredSize = this.configureViewportSize(sizes);
-            if (isObjectWithValues(configuredSize)) {
-                returnValue.push(configuredSize);
-            }
+            this.#configureViewportSize(sizes);
         } else if (Array.isArray(sizes)) {
             for (const size of sizes) {
-                const configuredSize = this.configureViewportSize(size);
-                if (isObjectWithValues(configuredSize)) {
-                    returnValue.push(configuredSize);
-                }
+                this.#configureViewportSize(size);
             }
         } else if (isObjectWithValues(sizes)) {
-            const configuredSize = this.configureViewportSize(sizes);
-            if (isObjectWithValues(configuredSize)) {
-                returnValue.push(configuredSize);
-            }
+            this.#configureViewportSize(sizes);
         }
-        return returnValue;
-    },
+    }
 
     /**
      * Configures a viewport size
      *
-     * @param {string|object} size The viewport size to configure
-     * @returns {object|boolean} The configured viewport size or false if the size is not valid
+     * @param {string|SizeObject} size The viewport size to configure
      */
-    configureViewportSize(size) {
-        let returnValue = false;
+    #configureViewportSize(size: string | SizeObject) {
         if (isStringWithValue(size)) {
             const sizes = size.split('x');
             if (sizes.length === 2) {
                 const width = parseInt(sizes[0], 10);
                 const height = parseInt(sizes[1], 10);
                 if (width > 0 && height > 0) {
-                    returnValue = { width, height };
+                    this.config.sizes.push({
+                        height,
+                        width,
+                    });
                 }
             }
         } else if (
             objectValueIsNumberOrNumberString(size, 'width') &&
             objectValueIsNumberOrNumberString(size, 'height')
         ) {
-            const width = parseInt(size.width, 10);
-            const height = parseInt(size.height, 10);
+            const width = parseInt(size.width.toString(), 10);
+            const height = parseInt(size.height.toString(), 10);
             if (width > 0 && height > 0) {
-                returnValue = { width, height };
+                this.config.sizes.push(size as SizeConfig);
+                // const configObj = new ConfigParser();
+                // configObj.setDoNotProcessUrls();
+                // configObj.setDoNotProcessSizes();
+                // configObj.parse(size);
+                // const config = configObj.getConfig();
+                // delete config.sizes;
+                // delete config.urls;
+                // const sizeConfig: SizeConfig = {
+                //     ...config,
+                //     width,
+                //     height,
+                // };
+                // this.config.sizes.push(sizeConfig);
             }
         }
-        return returnValue;
-    },
+    }
 
     /**
      * Sets the width of the viewport to take the screenshot in
-     *
-     * @param {number} value The width value to set
      */
-    setWidth(value) {
-        const width = this.processHeightWidth(value);
+    #setWidth() {
+        const width = processHeightWidth(this.configParam?.width);
         if (width > 0) {
-            this.width = width;
+            this.config.width = width;
         }
-    },
-
-    /**
-     * Parse the configuration data
-     *
-     * @param {object} data The configuration data to parse
-     */
-    parseConfig(data) {
-        if (isObjectWithValues(data)) {
-            this.setBaseUrl(data?.baseUrl);
-            this.setClip(data?.clip);
-            this.setDelay(data?.delay);
-            this.setDir(data?.dir);
-            this.setFileName(data?.name);
-            this.setFileType(data?.type);
-            this.setFullScreen(this.processFitAndFullScreen(data));
-            this.setHeight(data?.height);
-            this.setQuality(data?.quality);
-            this.setViewportSizes(data?.sizes);
-            if (isDefined(data.url)) {
-                this.setUrls(data.url);
-            } else if (isDefined(data.urls)) {
-                this.setUrls(data.urls);
-            }
-            this.setWidth(data?.width);
-        }
-    },
-
-    /**
-     * Processes the fit and full screen values
-     *
-     * @param {object} data The data to process
-     * @returns {boolean|null} The processed fit and full screen values or null if the values are not valid
-     */
-    processFitAndFullScreen(data) {
-        let returnValue = null;
-        let fullScreen = true;
-        if (isBoolLike(data?.fit)) {
-            fullScreen = data.fit;
-        } else if (isBoolLike(data?.fullScreen)) {
-            fullScreen = data.fullScreen;
-        } else if (isBoolLike(data?.full)) {
-            fullScreen = data.full;
-        } else if (isBoolLike(data.fullscreen)) {
-            fullScreen = data.fullscreen;
-        }
-        if (isTrueLike(fullScreen)) {
-            returnValue = true;
-        } else {
-            returnValue = false;
-        }
-        return returnValue;
-    },
-
-    /**
-     * Parse the JSON config file and merge it with the current config
-     *
-     * @param {string} file The name of the JSON config file to parse
-     */
-    parseConfigFile(file) {
-        try {
-            let configFile = 'shots.json';
-            if (typeof file === 'string' && file.length > 0) {
-                configFile = file;
-                const ext = extname(file).toLowerCase().replace('.', '');
-                if (ext.length === 0) {
-                    configFile += '.json';
-                }
-            }
-            if (fs.existsSync(configFile)) {
-                this.parseConfig(fs.readJsonSync(configFile));
-            } else {
-                logError(
-                    `The JSON config file "${configFile}" could not be found`
-                );
-                process.exit();
-            }
-        } catch (err) {
-            logError(
-                `Error while processing the JSON config file ${file}`,
-                err
-            );
-            process.exit();
-        }
-    },
-
-    /**
-     * Validates that the file type is allowed
-     *
-     * @param {string} type The file type
-     * @returns {string|boolean} The valid file type or false if the type is not valid
-     */
-    validateFileType(type) {
-        let returnVal = false;
-        if (isStringWithValue(type)) {
-            let fileType = type.toLowerCase().replace('.', '');
-            if (['jpg', 'jpeg', 'png'].includes(fileType)) {
-                if (fileType === 'jpeg') {
-                    fileType = 'jpg';
-                }
-                returnVal = fileType;
-            }
-        }
-        return returnVal;
-    },
-};
-
-export default config;
+    }
+}

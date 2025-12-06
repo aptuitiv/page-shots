@@ -4,6 +4,8 @@ Utility functions for determining a variable's type and if it can be used
 
 /*  eslint-disable @typescript-eslint/no-explicit-any  */
 
+export type BoolLike = boolean | 'n' | 'no' | 'false' | 'y' | 'yes' | 'true';
+
 /**
  * Returns if the value is true like
  *
