@@ -2,7 +2,12 @@
     Object utility functions
 =========================================================================== */
 
-import { isNumberOrNumberString, isObject, isString, isStringWithValue } from './types.js';
+import {
+    isNumberOrNumberString,
+    isObject,
+    isString,
+    isStringWithValue,
+} from './types.js';
 
 /**
  * Tests to see if the object is a valid object and if the key is a valid key
@@ -11,7 +16,8 @@ import { isNumberOrNumberString, isObject, isString, isStringWithValue } from '.
  * @param {string} key The object key to test
  * @returns {boolean}
  */
-export const objectHasValue = (obj, key) => isObject(obj) && key in obj;
+export const objectHasValue = (obj: any, key: string): boolean =>
+    isObject(obj) && key in obj;
 
 /**
  * Tests to see if the object is a valid object and if the key is a valid key and if the key value is an array
@@ -20,7 +26,7 @@ export const objectHasValue = (obj, key) => isObject(obj) && key in obj;
  * @param {string} key The object key to test
  * @returns {boolean}
  */
-export const objectValueIsArray = (obj, key) =>
+export const objectValueIsArray = <T>(obj: T, key: string): obj is T =>
     objectHasValue(obj, key) && Array.isArray(obj[key]);
 
 /**
@@ -30,8 +36,10 @@ export const objectValueIsArray = (obj, key) =>
  * @param {string} key The object key to test
  * @returns {boolean}
  */
-export const objectValueIsNumberOrNumberString = (obj, key) =>
-    objectHasValue(obj, key) && isNumberOrNumberString(obj[key]);
+export const objectValueIsNumberOrNumberString = <T>(
+    obj: T,
+    key: string
+): obj is T => objectHasValue(obj, key) && isNumberOrNumberString(obj[key]);
 
 /**
  * Tests to see if the object is a valid object and if the key is a valid key and if the key value is a string
@@ -40,8 +48,8 @@ export const objectValueIsNumberOrNumberString = (obj, key) =>
  * @param {string} key The object key to test
  * @returns {boolean}
  */
-export const objectValueIsString = (obj, key) =>
-    objectHasValue(obj, key) && isString(obj[key]);
+export const objectValueIsString = <T>(obj: T, key: string): obj is T =>
+    objectHasValue(obj, key) && typeof obj[key] === 'string';
 
 /**
  * Tests to see if the object is a valid object and if the key is a valid key and if the key value is a string with a value
@@ -50,8 +58,10 @@ export const objectValueIsString = (obj, key) =>
  * @param {string} key The object key to test
  * @returns {boolean}
  */
-export const objectValueIsStringWithValue = (obj, key) =>
-    objectHasValue(obj, key) && isStringWithValue(obj[key]);
+export const objectValueIsStringWithValue = <T>(
+    obj: T,
+    key: string
+): obj is T => objectHasValue(obj, key) && isStringWithValue(obj[key]);
 
 /**
  * Tests to see if the object is a valid object and if the key is a valid key and if the key value
@@ -62,7 +72,7 @@ export const objectValueIsStringWithValue = (obj, key) =>
  * @param {any} value The value to test the object value against
  * @returns {boolean}
  */
-export const objectValueIs = (obj, key, value) =>
+export const objectValueIs = (obj: any, key: string, value: any): boolean =>
     objectHasValue(obj, key) && obj[key] === value;
 
 /**
@@ -74,5 +84,8 @@ export const objectValueIs = (obj, key, value) =>
  * @param {Array} values The array of string values to test agains
  * @returns {boolean}
  */
-export const objectValueIn = (obj, key, values) =>
-    objectHasValue(obj, key) && values.includes(obj[key]);
+export const objectValueIn = (
+    obj: any,
+    key: string,
+    values: string[]
+): boolean => objectHasValue(obj, key) && values.includes(obj[key]);
