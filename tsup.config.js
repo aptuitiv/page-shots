@@ -18,7 +18,7 @@ export default defineConfig([
             })
         ],
         format: 'esm',
-        minify: true,
+        minify: false,
         outDir: 'dist',
         platform: 'node',
     }
