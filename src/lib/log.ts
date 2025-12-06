@@ -12,7 +12,7 @@ import logSymbols from 'log-symbols';
  * @param {string} message The message to output
  * @param {string} [additionalMessage] An additional message to output in cyan
  */
-export const logInfo = (message: string, additionalMessage: string) => {
+export const logInfo = (message: string, additionalMessage?: string) => {
     if (additionalMessage) {
         fancyLog(
             logSymbols.info,
@@ -34,7 +34,7 @@ export const logInfo = (message: string, additionalMessage: string) => {
 export const logConditionalInfo = (
     outputLog: boolean,
     message: string,
-    additionalMessage: string
+    additionalMessage?: string
 ) => {
     if (outputLog) {
         logInfo(message, additionalMessage);
@@ -47,7 +47,7 @@ export const logConditionalInfo = (
  * @param {string} message The message to output
  * @param {string} [additionalMessage] An additional message to output in cyan
  */
-export const logMessage = (message: string, additionalMessage: string) => {
+export const logMessage = (message: string, additionalMessage?: string) => {
     fancyLog(chalk.cyan(message), additionalMessage ?? '');
 };
 
@@ -61,7 +61,7 @@ export const logMessage = (message: string, additionalMessage: string) => {
 export const logConditionalMessage = (
     outputLog: boolean,
     message: string,
-    additionalMessage: string
+    additionalMessage?: string
 ) => {
     if (outputLog) {
         logMessage(message, additionalMessage);
@@ -74,7 +74,7 @@ export const logConditionalMessage = (
  * @param {string} message The message to output
  * @param {string} [additionalMessage] An additional message to output in cyan
  */
-export const logSuccess = (message: string, additionalMessage: string) => {
+export const logSuccess = (message: string, additionalMessage?: string) => {
     if (additionalMessage) {
         fancyLog(
             logSymbols.success,
@@ -96,7 +96,7 @@ export const logSuccess = (message: string, additionalMessage: string) => {
 export const logConditionalSuccess = (
     outputLog: boolean,
     message: string,
-    additionalMessage: string
+    additionalMessage?: string
 ) => {
     if (outputLog) {
         logSuccess(message, additionalMessage);
