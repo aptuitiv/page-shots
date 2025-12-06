@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 
 // Library
 import config from './config.js';
+import init from './init.js';
 
 // Get the directory name of the current module
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -117,7 +118,11 @@ program
         'Initialize the JSON file that is used to configure the URLs to get screenshots of.'
     )
     .action((file) => {
-        console.log('init', file);
+        init.setDir(process.cwd());
+        if (file) {
+            init.setFilename(file);
+        }
+        init.build();
     });
 
 // Parse the command line arguments
