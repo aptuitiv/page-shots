@@ -2,11 +2,8 @@
     Handle getting the screenshots
 =========================================================================== */
 
-import chalk from 'chalk';
 import fs from 'fs-extra';
-import ora from 'ora';
 import { dirname, extname, join } from 'path';
-import puppeteer from 'puppeteer';
 import { Cluster } from 'puppeteer-cluster';
 import sanitize from 'sanitize-filename';
 
@@ -19,13 +16,6 @@ import { isBoolean, isDefined, isStringWithValue } from './lib/types.js';
  */
 const screenshot = {
     /**
-     * Holds the browser object
-     *
-     * @type {object}
-     */
-    browser: null,
-
-    /**
      * The configuration object
      *
      * @type {object}
@@ -33,82 +23,13 @@ const screenshot = {
     config: {},
 
     /**
-     * Holds the current URL being processed
-     *
-     * @type {string}
-     */
-    currentUrl: '',
-
-    /**
-     * Holds the delay spinner object
-     *
-     * @type {object}
-     */
-    delaySpinner: null,
-
-    /**
-     * Holds the scroll spinner object
-    /**
-     * Holds the page object
-     *
-     * @type {object}
-     */
-    page: null,
-
-    /**
-     * Holds the page spinner object
-     *
-     * @type {object}
-     */
-    pageSpinner: null,
-
-    /**
-     * Holds the time that the page loading started
-     *
-     * @type {number}
-     */
-    pageStartTime: 0,
-
-    /**
-     * Holds the scroll spinner object
-     *
-     * @type {object}
-     */
-    scrollSpinner: null,
-
-    /**
-     * Holds the shot spinner object
-     *
-     * @type {object}
-     */
-    shotSpinner: null,
-
-    /**
-     * Initialize the screenshot object
+     * Load the URLs and get the screenshots
      * 
      * @param {object} config The configuration object
      */
-    async init(config) {
+    async run(config) {
         this.config = config;
-        console.log('Config: ', this.config);
-        // logMessage('Initializing screenshot object');
-        // this.browser = await puppeteer.launch();
-        // this.page = await this.browser.newPage();
 
-        // this.page.on('load', () => {
-        //     if (this.pageSpinner !== null) {
-        //         // Get the page elapsed time
-        //         const diff = process.hrtime(this.pageStartTime);
-        //         const time = diff[0] + diff[1] / 1e9;
-        //         this.pageSpinner.succeed(chalk.green(`${this.currentUrl} loaded in ${time}s`));
-        //     }
-        // });
-    },
-
-    /**
-     * Load the URLs and get the screenshots
-     */
-    async run() {
         try {
             const startTime = process.hrtime();
 
@@ -120,14 +41,6 @@ const screenshot = {
                 maxConcurrency: 10,
             });
 
-            // await cluster.task(async ({ page, data: url }) => {
-            //     console.log('getting screenshot for: ', url.url);
-            //     await page.goto(url.url);
-            //     const screen = await page.screenshot(this.getScreenshotConfig(url));
-            //     console.log('screenshot taken for: ', url.url);
-            //     // Store screenshot, do something else
-            // });
-
             // Set up the task to call for each URL
             await cluster.task(async ({ page, data: url }) => {
                 await this.getScreenshot(page, url);
@@ -136,16 +49,6 @@ const screenshot = {
 
             for (const url of this.config.urls) {
                 const urlObject = this.setupUrl(url);
-                // console.log('urlObject: ', urlObject);
-                this.currentUrl = urlObject.url;
-                this.pageStartTime = process.hrtime();
-                // this.pageSpinner = ora({ text: `Loading ${urlObject.url}`, spinner: 'arc' }).start();
-                // try {
-                //     await this.page.goto(urlObject.url, { waitUntil: 'load' });
-                // } catch (err) {
-                //     this.pageSpinner.fail(chalk.red(`Could not load ${urlObject.url}. ${err}`));
-                //     continue;
-                // }
 
                 if (urlObject.sizes.length > 0) {
                     // for (const size of urlObject.sizes) {
@@ -154,10 +57,6 @@ const screenshot = {
                 } else {
                     cluster.queue(urlObject);
                 }
-
-                // const promises = urlsToProcess.map((url) => this.getScreenshot(url));
-                // await Promise.all(promises);
-                // console.log('all done');
 
                 // if (url.sizes.length > 0) {
                 //     const { delay } = urlObject;
@@ -253,17 +152,15 @@ const screenshot = {
                 // Get the screenshots
 
             }
-            // Close the browser object
-            // logMessage('Closing browser');
-            // await this.browser.close();
+
             await cluster.idle();
             await cluster.close();
+
             // Output the total time it took to get the screenshots
             const diff = process.hrtime(startTime);
             const time = diff[0] + diff[1] / 1e9;
             logMessage(`Total time to get screenshots: ${time}s`);
         } catch (err) {
-            this.stopSpinners();
             logError(`Error getting screenshots`, err);
             process.exit(1);
         }
@@ -283,19 +180,13 @@ const screenshot = {
      * @param page.data
      */
     async getScreenshot(page, url) {
-
+        const pageStartTime = process.hrtime();
         // Set up the page load event listener
         page.on('load', () => {
             // Get the page elapsed time
-            const diff = process.hrtime(this.pageStartTime);
+            const diff = process.hrtime(pageStartTime);
             const time = diff[0] + diff[1] / 1e9;
             logSuccess(`${url.url} loaded in ${time}s`);
-            // if (this.pageSpinner !== null) {
-            //     // Get the page elapsed time
-            //     const diff = process.hrtime(this.pageStartTime);
-            //     const time = diff[0] + diff[1] / 1e9;
-            //     this.pageSpinner.succeed(chalk.green(`${this.currentUrl} loaded in ${time}s`));
-            // }
         });
 
         // Set the viewport size
@@ -308,17 +199,12 @@ const screenshot = {
         logMessage(`Loading ${url.url}. Viewport size: ${url.width}px / ${url.height}px`);
         await page.goto(url.url);
 
-        // console.log('Screenshot Config: ', this.getScreenshotConfig(url));
-
         // Save image screenshot
         try {
             logMessage(`Taking screenshot of ${url.path} (${url.width}px / ${url.height}px)`);
             await page.screenshot(this.getScreenshotConfig(url));
             logSuccess(`Saved ${url.path} (${url.width}px / ${url.height}px)`);
         } catch (err) {
-            // if (this.shotSpinner !== null) {
-            //     this.shotSpinner.stop();
-            // }
             logError('Error while taking the screenshot', err);
         }
     },
@@ -630,24 +516,6 @@ const screenshot = {
         name = name.replace(/{size}/g, url.sizeName);
 
         return name;
-    },
-
-    /**
-     * Stops any spinners
-     */
-    stopSpinners() {
-        if (this.pageSpinner !== null) {
-            this.pageSpinner.stop();
-        }
-        if (this.shotSpinner !== null) {
-            this.shotSpinner.stop();
-        }
-        if (this.delaySpinner !== null) {
-            this.delaySpinner.stop();
-        }
-        if (this.scrollSpinner !== null) {
-            this.scrollSpinner.stop();
-        }
     }
 }
 

@@ -45,21 +45,16 @@ program
     .option('--clipX <integer>', 'The x-coordinate of top-left corner of clip area.')
     .option('--clipY <integer>', 'The y-coordinate of top-left corner of clip area.')
     .action((options) => {
-        console.log('Options: ', options);
         if (isStringWithValue(options.config)) {
             config.parseConfigFile(options.config);
         } else {
             config.parseConfig(options);
         }
         if (config.urls.length > 0) {
-            screenshot.init(config).then(() => {
-                screenshot.run().then(() => {
-                    console.log('all done');
-                }).catch((err) => {
-                    logError('Error running screenshot: ', err);
-                });
+            screenshot.run(config).then(() => {
+                console.log('all done');
             }).catch((err) => {
-                logError('Error initializing screenshot: ', err);
+                logError('Error getting screenshots: ', err);
             });
         } else {
             logError('No URLs were provided to get screenshots of. Nothing to do.');
