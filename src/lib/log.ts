@@ -143,7 +143,7 @@ export const logError = (message: string, error?: Error) => {
  *
  * @param {boolean} [outputLog] Whether to output the log
  * @param {string} message The message to output
- * @param error
+ * @param {Error} [error] The error to output
  */
 export const logConditionalError = (
     outputLog: boolean,

@@ -2,10 +2,11 @@
     Object utility functions
 =========================================================================== */
 
+/*  eslint-disable @typescript-eslint/no-explicit-any  */
+
 import {
     isNumberOrNumberString,
     isObject,
-    isString,
     isStringWithValue,
 } from './types.js';
 
