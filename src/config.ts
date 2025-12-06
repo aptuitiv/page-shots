@@ -7,8 +7,18 @@ import { extname } from 'path';
 
 // Library
 import { logError } from './lib/log.js';
-import { objectValueIsNumberOrNumberString, objectValueIsStringWithValue } from './lib/object.js';
-import { isBoolLike, isDefined, isNumberOrNumberString, isObjectWithValues, isStringWithValue, isTrueLike } from './lib/types.js';
+import {
+    objectValueIsNumberOrNumberString,
+    objectValueIsStringWithValue,
+} from './lib/object.js';
+import {
+    isBoolLike,
+    isDefined,
+    isNumberOrNumberString,
+    isObjectWithValues,
+    isStringWithValue,
+    isTrueLike,
+} from './lib/types.js';
 
 const config = {
     // The base URL to prepend to each URL if necessary
@@ -42,10 +52,9 @@ const config = {
     // Holds the viewport width to get the screenshot in
     width: 1300,
 
-
     /**
      * Set the base URL
-     * 
+     *
      * @param {string} url The base URL to prepend to each URL if necessary
      */
     setBaseUrl(url) {
@@ -87,8 +96,8 @@ const config = {
                     x,
                     y,
                     width: w,
-                    height: h
-                }
+                    height: h,
+                };
             }
         }
         return returnValue;
@@ -105,14 +114,14 @@ const config = {
 
     /**
      * Processes the delay value
-     * 
+     *
      * @param {number} value The number of milliseconds to delay
      * @returns {number} The processed delay value
      */
     processDelay(value) {
         let returnValue = 0;
         if (isNumberOrNumberString(value)) {
-            const delay = parseInt(value, 10);
+            let delay = parseInt(value, 10);
             if (delay > 0) {
                 if (delay > this.maxDelay) {
                     delay = this.maxDelay;
@@ -209,7 +218,7 @@ const config = {
         if (isStringWithValue(name)) {
             if (name.includes('{')) {
                 /**
-                 * The name includes placeholders and it's a pattern for all URLs. 
+                 * The name includes placeholders and it's a pattern for all URLs.
                  * Set it as the new name format
                  */
                 this.nameFormat = name;
@@ -253,7 +262,7 @@ const config = {
 
     /**
      * Sets one or more URLs
-     * 
+     *
      * @param {Array | string} urls The URL(s) to set
      */
     setUrls(urls) {
@@ -276,19 +285,22 @@ const config = {
 
     /**
      * Configures the URL object
-     * 
+     *
      * If the URL is a string, it will be converted to an object with the type and URL properties.
      * If the URL is an object, it will be returned as is.
-     * 
+     *
      * If the URL is an object and the name is not set, the file name will be used.
      * If the URL is an object and the type is not set, the file type will be used.
-     * 
+     *
      * @param {string|object} url The URL to configure
      * @returns {object|boolean} The URL object or false if the URL is not valid
      */
     configureUrl(url) {
         let returnValue = false;
-        if (isObjectWithValues(url) && objectValueIsStringWithValue(url, 'url')) {
+        if (
+            isObjectWithValues(url) &&
+            objectValueIsStringWithValue(url, 'url')
+        ) {
             returnValue = url;
         } else if (isStringWithValue(url)) {
             returnValue = {
@@ -300,17 +312,17 @@ const config = {
 
     /**
      * Set one or more viewport sizes
-     * 
+     *
      * Each size can be set from a string where the width and height are separated by an "x".
      * 1200x560
-     * 
+     *
      * It can be set as an array of sizes
      * ['1200x560', '600x400']
      * [{width: 1200, height: 560}, {width: 600, height: 400}]
-     * 
+     *
      * It can also be set as an object that contains the width and height values.
      * {width: 1200, height: 560}
-     * 
+     *
      * @param {string|Array|object} sizes The viewport size(s) to set
      */
     setViewportSizes(sizes) {
@@ -348,7 +360,7 @@ const config = {
 
     /**
      * Configures a viewport size
-     * 
+     *
      * @param {string|object} size The viewport size to configure
      * @returns {object|boolean} The configured viewport size or false if the size is not valid
      */
@@ -363,7 +375,10 @@ const config = {
                     returnValue = { width, height };
                 }
             }
-        } else if (objectValueIsNumberOrNumberString(size, 'width') && objectValueIsNumberOrNumberString(size, 'height')) {
+        } else if (
+            objectValueIsNumberOrNumberString(size, 'width') &&
+            objectValueIsNumberOrNumberString(size, 'height')
+        ) {
             const width = parseInt(size.width, 10);
             const height = parseInt(size.height, 10);
             if (width > 0 && height > 0) {
@@ -454,13 +469,17 @@ const config = {
             }
             if (fs.existsSync(configFile)) {
                 this.parseConfig(fs.readJsonSync(configFile));
-
             } else {
-                logError(`The JSON config file "${configFile}" could not be found`);
+                logError(
+                    `The JSON config file "${configFile}" could not be found`
+                );
                 process.exit();
             }
         } catch (err) {
-            logError(`Error while processing the JSON config file ${file}`, err);
+            logError(
+                `Error while processing the JSON config file ${file}`,
+                err
+            );
             process.exit();
         }
     },
@@ -483,7 +502,7 @@ const config = {
             }
         }
         return returnVal;
-    }
+    },
 };
 
 export default config;

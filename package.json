@@ -6,11 +6,12 @@
     "type": "module",
     "scripts": {
         "eslint": "eslint --fix --no-warn-ignored .",
+        "build": "tsup",
         "test": "mocha",
-        "watch": "watch-eslint  --fix --color ."
+        "watch": "tsup --watch"
     },
     "bin": {
-        "page-shots": "./index.js"
+        "page-shots": "./dist/index.js"
     },
     "publishConfig": {
         "access": "public"
@@ -43,7 +44,7 @@
         "picture"
     ],
     "engines": {
-        "node": ">=8"
+        "node": ">=20"
     },
     "author": {
         "name": "Eric Tompkins"
@@ -67,10 +68,13 @@
     },
     "devDependencies": {
         "@aptuitiv/eslint-config-aptuitiv": "^1.2.0",
+        "@types/fs-extra": "^11.0.4",
         "chai": "^6.2.1",
         "chai-as-promised": "^8.0.2",
+        "esbuild-plugin-eslint": "^0.3.12",
         "eslint": "^9.38.0",
         "mocha": "^11.7.5",
+        "tsup": "^8.5.1",
         "watch-eslint": "^1.1.0"
     }
 }
