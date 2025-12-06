@@ -1,0 +1,113 @@
+---
+title: Overview
+slug: /
+---
+
+# Page Shots
+
+Page Shots is a command line interface for taking screenshots of one or more pages of a website. This is useful for getting screenshots for portfolios.
+
+## Install
+
+We recommend installing the library globally so that you can use `page-shots` on the command line to run some commands.
+
+Page Shots requires [Node.js][node] to run.
+
+```bash
+npm i -g @aptuitiv/page-shots
+```
+
+## Usage
+
+The minimum command to get a screenshot of a page is to specify the URL of the page to get a screenshot of.
+
+```bash
+page-shots -u https://www.aptuitiv.com
+```
+
+There are many more options that you can use to configure the screenshot. See the [Command line usage and actions](/command-line/) page for a full list of options.
+
+There are two ways to use the Page Shots library.
+
+1. Specify one or more URLs on the [command line](/command-line) to get screenshots for.
+2. Use a [JSON file](/json-config) to specify one or more URLs and process it on the command line.
+
+## Filenames and Directories
+
+By default the screenshot will be saved in the same directory that you call the command in and by default the file name will be based on the URL of the page. Also, by default, the screenshot will be a jpg image.
+
+For example, if the URL is `https://www.aptuitiv.com` then the file name will be `www-branchcms-com.jpg`.
+
+You can specify a file name for the screenshot. The file name can be just the name without the extension, or if can include the "jpg" or "png" extension. If the file name does not have an extension or it doesn't match either "jpg" or "png" extension then the correct extension based on the `type` argument will be used.
+
+If the file name does have an extension and the extension is `jpg` or `png`, then that will always override the file type. The file type will be set to match the extension.
+
+The file name can include a directory path. For example: `screenshots/shot-{stub}-{width}.jpg`. If it does then the full path set by the file name will be appended to the directory setting value if that was specified.
+
+## Dynamic file names
+
+Instead of specifying a specific file name, you can specify a format to follow. There are a few placeholders that you can use in the file name to be replaced with information about the screenshot.
+
+| Placeholder | Description                                                                                                                                                                |
+| :---------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| {fit}       | `fit` if the screenshot will only be for the specified width and height. `full` if the screenshot will be for the full page.                                               |
+| {full}      | `fit` if the screenshot will only be for the specified width and height. `full` if the screenshot will be for the full page.                                               |
+| {height}    | The height of the screenshot or viewport.                                                                                                                                  |
+| {quality}   | The image quality of the jpg image.                                                                                                                                        |
+| {size}      | The name of the size. Set with the `key` value in a size object. If it's not set then the value will be the width and height separated by an "x". For example, `1300x800`. |
+| {stub}      | The URL stub. This would be the part of the URL after the domain name.                                                                                                     |
+| {url}       | The filename friendly version of the URL.                                                                                                                                  |
+| {width}     | The width of the screenshot.                                                                                                                                               |
+
+The default file name format is `{url}-{width}`.
+
+When you set the file name format you can optionally set the extension. As long as the extension is "jpg" or "png" then the image will be saved as a "jpg" or "png" image, respectively.
+
+## Directories
+
+You can specify a directory to save the screenshots in. The directory will be relative to where you call the command. If the directory does not exist then it will be created.
+
+## Full size and fixed size screenshots
+
+By default all screenshots will capture the entire page, not just within the height and width specified. The `height` value is only used with full size screenshots if the height of the web page is less than the specified height.
+In that case the screenshot will be the specified height. If the height of the web page is larger than the specified height then the actual height of the page will be used.
+
+You can use the `--fit` option to only capture the page within the specified height and width.
+
+You can go even further and capture just a clip of the page by using the `-clipH`, `-clipW`, `-clipX`, and `-clipY` options. You must specify all four parameters for a clip to be taken.
+
+## Setting screenshot size
+
+There are two ways that you can set the size of the screenshot size. (Note, the screenshot size is always in pixels.)
+
+1. Set the size by setting the `width` and `height` values. The `height` value is only necessary if you want to capture only the exact height and width.
+2. Set one or more sizes by setting the `size` value. The `size` value requires that both the width and height be set. This does not, however, force the screenshot to only
+   match the exact width and height. By default all screenshots are full size.
+
+[Set multiple screenshot sizes on the command line](/command-line#set-multiple-screenshot-sizes).
+
+[Set the screenshot size using the `size` argument on the command line](/command-line#set-the-screenshot-size-using-the-size-argument).
+
+## Setting URLs
+
+You can specify the full URL for each web page to capture. Or, if you're getting multiple screenshots in the same website, then you can set the base URL and then just specify the URL path for each web page.
+
+For example, let's say that your website is `https://www.mysite.com` and you're wanting to capture the home page, the "about us" page and the contact page. You can first set the base URL to be `https://www.mysite.com` and then simply specify `/` for the home page, `about-us` for the about us page, and `contact` for the contact page.
+
+Note, Page Shots is smart enough to ensure that there is only one `/` between the base URL and the page path.
+
+## Delaying the screenshot
+
+If you need to wait for certain assets to load on the page before taking the screenshot then you set a specific number of milliseconds to wait after the page loads and before the screenshot is taken.
+
+An example scenario could be if you have a Google Map section on the page and you want to make sure that it fully loads before taking the screenshot.
+
+The delay happens after the page has loaded, the page has been scrolled from top to bottom, and right before the screenshot is taken.
+
+## Lazy loaded content
+
+Page Shots does it's best to handle lazy loaded content by first scrolling the entire page before taking the screenshot. A small delay of 100ms is then taken before doing the screenshot. The script then waits for all images to return that they have loaded. However, loading doesn't always mean displayed. If the screenshot doesn't display all images then the correct approach would be to add a [delay](#delaying-the-screenshot) before the screenshot is taking. 500 to 1000 milliseconds is often sufficient.
+
+## License
+
+Page Shots is licensed under the [MIT](https://opensource.org/licenses/MIT) license.

@@ -2,30 +2,25 @@ import { themes as prismThemes } from 'prism-react-renderer';
 import type { Config } from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
-// This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
-
 const config: Config = {
-    title: 'My Site',
-    tagline: 'Dinosaurs are cool',
-    favicon: 'img/favicon.ico',
-
-    // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
-    future: {
-        v4: true, // Improve compatibility with the upcoming Docusaurus v4
-    },
+    title: 'Page Shots',
+    tagline: 'Take screenshots of multiple webpages and in multiple sizes',
+    favicon: 'img/favicon.png',
 
     // Set the production url of your site here
-    url: 'https://your-docusaurus-site.example.com',
+    url: 'https://aptuitiv.github.io/',
     // Set the /<baseUrl>/ pathname under which your site is served
     // For GitHub pages deployment, it is often '/<projectName>/'
-    baseUrl: '/',
+    baseUrl: '/page-shots/',
+    trailingSlash: false, // Set to true if you want to use /<page-name>/ instead of /<page-name>.html
 
     // GitHub pages deployment config.
     // If you aren't using GitHub pages, you don't need these.
-    organizationName: 'facebook', // Usually your GitHub org/user name.
-    projectName: 'docusaurus', // Usually your repo name.
+    organizationName: 'aptuitiv', // Usually your GitHub org/user name.
+    projectName: 'aptuitiv.github.io', // Usually your repo name.
 
     onBrokenLinks: 'throw',
+    onBrokenMarkdownLinks: 'warn',
 
     // Even if you don't use internationalization, you can use this field to set
     // useful metadata like html lang. For example, if your site is Chinese, you
@@ -39,28 +34,12 @@ const config: Config = {
         [
             'classic',
             {
+                // Docs configuration: https://docusaurus.io/docs/api/plugins/@docusaurus/plugin-content-docs
                 docs: {
+                    routeBasePath: '/',
                     sidebarPath: './sidebars.ts',
-                    // Please change this to your repo.
-                    // Remove this to remove the "edit this page" links.
-                    editUrl:
-                        'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
                 },
-                blog: {
-                    showReadingTime: true,
-                    feedOptions: {
-                        type: ['rss', 'atom'],
-                        xslt: true,
-                    },
-                    // Please change this to your repo.
-                    // Remove this to remove the "edit this page" links.
-                    editUrl:
-                        'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
-                    // Useful options to enforce blogging best practices
-                    onInlineTags: 'warn',
-                    onInlineAuthors: 'warn',
-                    onUntruncatedBlogPosts: 'warn',
-                },
+                blog: false,
                 theme: {
                     customCss: './src/css/custom.css',
                 },
@@ -70,26 +49,34 @@ const config: Config = {
 
     themeConfig: {
         // Replace with your project's social card
-        image: 'img/docusaurus-social-card.jpg',
-        colorMode: {
-            respectPrefersColorScheme: true,
+        // image: 'img/docusaurus-social-card.jpg',
+        docs: {
+            // https://docusaurus.io/docs/sidebar#theme-configuration
+            sidebar: {
+                autoCollapseCategories: true,
+                hideable: true,
+            },
         },
         navbar: {
-            title: 'My Site',
+            title: 'Page Shots',
             logo: {
-                alt: 'My Site Logo',
-                src: 'img/logo.svg',
+                alt: 'Aptuitiv',
+                src: '/img/logo.png',
             },
             items: [
+                // {
+                //     type: 'docSidebar',
+                //     sidebarId: 'tutorialSidebar',
+                //     position: 'left',
+                //     label: 'Tutorial',
+                // },
                 {
-                    type: 'docSidebar',
-                    sidebarId: 'tutorialSidebar',
-                    position: 'left',
-                    label: 'Tutorial',
+                    href: 'https://www.aptuitiv.com',
+                    label: 'Aptuitiv',
+                    position: 'right',
                 },
-                { to: '/blog', label: 'Blog', position: 'left' },
                 {
-                    href: 'https://github.com/facebook/docusaurus',
+                    href: 'https://github.com/aptuitiv/page-shots',
                     label: 'GitHub',
                     position: 'right',
                 },
@@ -97,48 +84,7 @@ const config: Config = {
         },
         footer: {
             style: 'dark',
-            links: [
-                {
-                    title: 'Docs',
-                    items: [
-                        {
-                            label: 'Tutorial',
-                            to: '/docs/intro',
-                        },
-                    ],
-                },
-                {
-                    title: 'Community',
-                    items: [
-                        {
-                            label: 'Stack Overflow',
-                            href: 'https://stackoverflow.com/questions/tagged/docusaurus',
-                        },
-                        {
-                            label: 'Discord',
-                            href: 'https://discordapp.com/invite/docusaurus',
-                        },
-                        {
-                            label: 'X',
-                            href: 'https://x.com/docusaurus',
-                        },
-                    ],
-                },
-                {
-                    title: 'More',
-                    items: [
-                        {
-                            label: 'Blog',
-                            to: '/blog',
-                        },
-                        {
-                            label: 'GitHub',
-                            href: 'https://github.com/facebook/docusaurus',
-                        },
-                    ],
-                },
-            ],
-            copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+            copyright: `Copyright © ${new Date().getFullYear()} <a href="https://www.aptuitiv.com">Aptuitiv, Inc.</a>`,
         },
         prism: {
             theme: prismThemes.github,
