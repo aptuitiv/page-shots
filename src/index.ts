@@ -45,6 +45,11 @@ program
     )
     .option('-f, --fit', 'Fit the screenshot to the provided height and width.')
     .option(
+        '-F, --fullScreen <boolean>',
+        'Whether or not to have the screenshot capture the full width and height of the page.',
+        true
+    )
+    .option(
         '-h, --height <integer>',
         'Integer height of the viewport to take the screenshot in. Use "--fit" if you want the screenshot to only capture the viewport width and height.',
         '900'
