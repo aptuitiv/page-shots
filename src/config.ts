@@ -4,6 +4,7 @@
 
 import fs from 'fs-extra';
 import { extname } from 'path';
+import { type ImageFormat } from 'puppeteer';
 
 // Library
 import { logError } from './lib/log.js';
@@ -68,7 +69,7 @@ type BaseConfigParam = {
     // The image quality if the screenshot is a jpg
     quality?: number | string;
     // The file type to use for the screenshots
-    type?: string;
+    type?: ImageFormat;
     // The list of URLs to get screenshots for
     urls?: string[]; // JSON config
     // The width of the viewport to take the screenshot in
@@ -120,7 +121,7 @@ type BaseConfig = {
     delay: number | string;
     dir: string;
     fileName: string;
-    fileType: string;
+    fileType: ImageFormat;
     fullScreen: boolean;
     height: number;
     nameFormat: string;
@@ -162,7 +163,7 @@ export const defaultConfig: Config = {
     // and the name doesn't include {} placeholders.
     fileName: '',
     // The file type to save the screenshots as
-    fileType: 'jpg',
+    fileType: 'jpeg',
     // Holds whether or not the screenshot should be full page
     fullScreen: true,
     // Holds the viewport height to get the screenshot in
@@ -203,17 +204,17 @@ const processHeightWidth = (value: string | number): number => {
  * Validates that the file type is allowed
  *
  * @param {string} type The file type
- * @returns {string|boolean} The valid file type or false if the type is not valid
+ * @returns {ImageFormat|boolean} The valid file type or false if the type is not valid
  */
-const validateFileType = (type: string): string | false => {
-    let returnVal: string | false = false;
+const validateFileType = (type: string): ImageFormat | false => {
+    let returnVal: ImageFormat | false = false;
     if (isStringWithValue(type)) {
         let fileType = type.toLowerCase().replace('.', '');
-        if (['jpg', 'jpeg', 'png'].includes(fileType)) {
-            if (fileType === 'jpeg') {
-                fileType = 'jpg';
+        if (['jpg', 'jpeg', 'png', 'webp'].includes(fileType)) {
+            if (fileType === 'jpg') {
+                fileType = 'jpeg';
             }
-            returnVal = fileType;
+            returnVal = fileType as ImageFormat;
         }
     }
     return returnVal;
@@ -498,12 +499,8 @@ export class ConfigParser {
      */
     #setFileType() {
         if (isStringWithValue(this.configParam?.type)) {
-            let fileType = validateFileType(this.configParam.type);
+            const fileType = validateFileType(this.configParam.type);
             if (fileType) {
-                if (fileType === 'jpg') {
-                    // puppeteer uses 'jpeg' instead of 'jpg'
-                    fileType = 'jpeg';
-                }
                 this.config.fileType = fileType;
             }
         }
