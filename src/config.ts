@@ -519,6 +519,11 @@ export class ConfigParser {
      *
      */
     #setFullScreen() {
+        if (
+            isBoolLike(this.configParam?.fit) ||
+            isBoolLike(this.configParam?.fullscreen) ||
+            isBoolLike(this.configParam?.full)
+        ) {
         let fullScreen: BoolLike = true;
         if (isBoolLike(this.configParam?.fit)) {
             fullScreen = this.configParam.fit;
@@ -532,6 +537,7 @@ export class ConfigParser {
         } else {
             this.config.fullScreen = false;
         }
+    }
     }
 
     /**
