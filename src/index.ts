@@ -10,7 +10,7 @@ import { fileURLToPath } from 'url';
 import { ConfigParser, maxDelay } from './config.js';
 import { logError, logSuccess } from './lib/log.js';
 import init from './init.js';
-import screenshot from './screenshot.js';
+import getScreenshots from './screenshot.js';
 
 // Get the directory name of the current module
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -97,8 +97,7 @@ program
         configParser.setProcessConfigFile();
         configParser.parse(options);
         if (configParser.hasUrls()) {
-            screenshot
-                .run(configParser.getConfig())
+            getScreenshots(configParser.getConfig())
                 .then(() => {
                     logSuccess('All screenshots have been taken.');
                 })
