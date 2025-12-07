@@ -77,7 +77,7 @@ type BaseConfigParam = {
 };
 
 // The size object type if the size parameter is an object
-type SizeObject = BaseConfigParam & {
+type SizeParamObject = BaseConfigParam & {
     // The height of the viewport to take the screenshot in
     height: number | string;
     // The width of the viewport to take the screenshot in
@@ -85,24 +85,24 @@ type SizeObject = BaseConfigParam & {
 };
 
 // The size value type
-type SizeValue = string | string[] | SizeObject;
+type SizeParam = string | string[] | SizeParamObject;
 
 // The URL object type if the URL parameter is an object
-type UrlObject = BaseConfigParam & {
+export type UrlParamObject = BaseConfigParam & {
     url: string;
 };
 
 // The URL value type
-type UrlValue = string | UrlObject;
+type UrlParam = string | UrlParamObject;
 
 type ConfigParam = BaseConfigParam & {
     // Holds one or more viewport sizes to get the screenshot in
-    size?: SizeValue;
-    sizes?: SizeValue;
+    size?: SizeParam;
+    sizes?: SizeParam;
     // The list of URLs to get screenshots for
-    url?: UrlValue; // This will be an array from the CLI arguments
+    url?: UrlParam; // This will be an array from the CLI arguments
     // The list of URLs to get screenshots for
-    urls?: UrlValue[]; // JSON config
+    urls?: UrlParam[]; // JSON config
 };
 
 // The clip type
@@ -131,21 +131,22 @@ type BaseConfig = {
 
 // The size configuration type. This is the configuration object for a single size.
 // Partial makes all properties of BaseConfig optional.
-type SizeConfig = Partial<BaseConfig> & {
+export type SizeConfig = Partial<BaseConfig> & {
     height: number;
     width: number;
 };
 
 // The URL configuration type. This is the configuration object for a single URL.
 // Partial makes all properties of BaseConfig optional.
-type UrlConfig = Partial<BaseConfig> & {
+export type UrlConfig = Partial<BaseConfig> & {
+    sizes: SizeParamObject[];
     url: string;
 };
 
 // The configuration type
 export type Config = BaseConfig & {
-    sizes: SizeConfig[];
-    urls: UrlConfig[];
+    sizes: SizeParamObject[];
+    urls: UrlParamObject[];
 };
 
 // Default configuration
@@ -588,14 +589,14 @@ export class ConfigParser {
      * If the URL is an object and the name is not set, the file name will be used.
      * If the URL is an object and the type is not set, the file type will be used.
      *
-     * @param {UrlValue} url The URL to configure
+     * @param {UrlParam} url The URL to configure
      */
-    #configureUrl(url: UrlValue) {
+    #configureUrl(url: UrlParam) {
         if (
-            isObjectWithValues<UrlObject>(url) &&
+            isObjectWithValues<UrlParamObject>(url) &&
             objectValueIsStringWithValue(url, 'url')
         ) {
-            this.config.urls.push(url as UrlConfig);
+            this.config.urls.push(url);
             // const configObj = new ConfigParser();
             // configObj.setDoNotProcessUrls();
             // configObj.parse(url);
@@ -635,9 +636,9 @@ export class ConfigParser {
     /**
      * Processes the viewport sizes
      *
-     * @param {SizeValue} sizes The viewport size(s) to process
+     * @param {SizeParam} sizes The viewport size(s) to process
      */
-    #processViewportSizes(sizes: SizeValue) {
+    #processViewportSizes(sizes: SizeParam) {
         if (isStringWithValue(sizes)) {
             this.#configureViewportSize(sizes);
         } else if (Array.isArray(sizes)) {
@@ -652,9 +653,9 @@ export class ConfigParser {
     /**
      * Configures a viewport size
      *
-     * @param {string|SizeObject} size The viewport size to configure
+     * @param {string|SizeParamObject} size The viewport size to configure
      */
-    #configureViewportSize(size: string | SizeObject) {
+    #configureViewportSize(size: string | SizeParamObject) {
         if (isStringWithValue(size)) {
             const sizes = size.split('x');
             if (sizes.length === 2) {
@@ -674,7 +675,7 @@ export class ConfigParser {
             const width = parseInt(size.width.toString(), 10);
             const height = parseInt(size.height.toString(), 10);
             if (width > 0 && height > 0) {
-                this.config.sizes.push(size as SizeConfig);
+                this.config.sizes.push(size);
                 // const configObj = new ConfigParser();
                 // configObj.setDoNotProcessUrls();
                 // configObj.setDoNotProcessSizes();
