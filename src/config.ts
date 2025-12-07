@@ -65,6 +65,8 @@ type BaseConfigParam = {
     jpg?: BoolLike;
     // The name of the file to save the screenshot as. Only applies to the first URL.
     name?: string;
+    // The device pixel ratio to use for the screenshot. Default is 1.
+    pixelRatio?: number | string;
     // Whether or not to save the screenshot as a png
     png?: BoolLike;
     // The image quality if the screenshot is a jpg
@@ -120,6 +122,7 @@ type BaseConfig = {
     baseUrl: string;
     clip: false | Clip;
     delay: number | string;
+    deviceScaleFactor: number;
     dir: string;
     fileName: string;
     fileType: ImageFormat;
@@ -156,6 +159,8 @@ export const defaultConfig: Config = {
     clip: false,
     // The number of milliseconds to delay after loading before taking a picture of the page
     delay: 0,
+    // The device scale factor to use for the screenshot. Puppeteer default is 1.
+    deviceScaleFactor: 1,
     // The directory that screenshots are saved in
     dir: '',
     // The file name to save the screenshots as.
@@ -365,6 +370,7 @@ export class ConfigParser {
         this.#setBaseUrl();
         this.#setClip();
         this.#setDelay();
+        this.#setDeviceScaleFactor();
         this.#setDir();
         this.#setFileName();
         this.#setFileType();
@@ -562,6 +568,18 @@ export class ConfigParser {
         const height = processHeightWidth(this.configParam?.height);
         if (height > 0) {
             this.config.height = height;
+        }
+    }
+
+    #setDeviceScaleFactor() {
+        if (isNumberOrNumberString(this.configParam?.pixelRatio)) {
+            const deviceScaleFactor = parseInt(
+                this.configParam.pixelRatio.toString(),
+                10
+            );
+            if (deviceScaleFactor > 0) {
+                this.config.deviceScaleFactor = deviceScaleFactor;
+            }
         }
     }
 

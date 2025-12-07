@@ -63,6 +63,10 @@ program
         'The name of the file to save the screenshot as. Only applies to the first URL.'
     )
     .option(
+        '--pixelRatio <number>',
+        'The device pixel ratio to use for the screenshot. Default is 1.'
+    )
+    .option(
         '--png',
         'Set the image type for screenshots to be "png". Alternate method to using -t.'
     )

@@ -136,8 +136,9 @@ const getScreenshot = async (page: Page, url: UrlData) => {
 
     // Set the viewport size
     await page.setViewport({
-        width: url.width,
+        deviceScaleFactor: url.deviceScaleFactor,
         height: url.height,
+        width: url.width,
     });
 
     // Go to the URL
