@@ -31,6 +31,16 @@ program
         '-b, --base <string>',
         'The base URL value. If set then the URL will be appended to this value.'
     )
+    .option('--clipH <integer>', 'The height of clip area.')
+    .option('--clipW <integer>', 'The width of clip area.')
+    .option(
+        '--clipX <integer>',
+        'The x-coordinate of top-left corner of clip area.'
+    )
+    .option(
+        '--clipY <integer>',
+        'The y-coordinate of top-left corner of clip area.'
+    )
     .option(
         '-c, --config <string>',
         'The name of the JSON config file to use to get the screenshots. If this is set all other arguments are ignored.'
@@ -90,16 +100,6 @@ program
         '-w, --width <integer>',
         'Integer width of the viewport to take the screenshot in.',
         '1300'
-    )
-    .option('--clipH <integer>', 'The height of clip area.')
-    .option('--clipW <integer>', 'The width of clip area.')
-    .option(
-        '--clipX <integer>',
-        'The x-coordinate of top-left corner of clip area.'
-    )
-    .option(
-        '--clipY <integer>',
-        'The y-coordinate of top-left corner of clip area.'
     )
     .action((options) => {
         const configParser = new ConfigParser();
