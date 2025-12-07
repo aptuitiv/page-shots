@@ -58,6 +58,7 @@ type BaseConfigParam = {
     full?: BoolLike;
     // Whether or not to get a full page screenshot. Alternate to "full" and "fit".
     fullscreen?: BoolLike;
+    fullScreen?: BoolLike;
     // The height of the viewport to take the screenshot in
     height?: number | string;
     // Whether or not to save the screenshot as a jpg
@@ -533,6 +534,7 @@ export class ConfigParser {
         if (
             isBoolLike(this.configParam?.fit) ||
             isBoolLike(this.configParam?.fullscreen) ||
+            isBoolLike(this.configParam?.fullScreen) ||
             isBoolLike(this.configParam?.full)
         ) {
             let fullScreen: BoolLike = true;
@@ -540,6 +542,8 @@ export class ConfigParser {
                 fullScreen = this.configParam.fit;
             } else if (isBoolLike(this.configParam?.fullscreen)) {
                 fullScreen = this.configParam.fullscreen;
+            } else if (isBoolLike(this.configParam?.fullScreen)) {
+                fullScreen = this.configParam.fullScreen;
             } else if (isBoolLike(this.configParam?.full)) {
                 fullScreen = this.configParam.full;
             }
