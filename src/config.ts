@@ -130,15 +130,13 @@ type BaseConfig = {
 };
 
 // The size configuration type. This is the configuration object for a single size.
-// Partial makes all properties of BaseConfig optional.
-export type SizeConfig = Partial<BaseConfig> & {
+export type SizeConfig = BaseConfig & {
     height: number;
     width: number;
 };
 
 // The URL configuration type. This is the configuration object for a single URL.
-// Partial makes all properties of BaseConfig optional.
-export type UrlConfig = Partial<BaseConfig> & {
+export type UrlConfig = BaseConfig & {
     sizes: SizeParamObject[];
     url: string;
 };
