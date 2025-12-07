@@ -558,15 +558,19 @@ export class ConfigParser {
      * Sets one or more URLs
      */
     #setUrls() {
-        if (Array.isArray(this.configParam?.urls)) {
-            this.config.urls = [];
+        if (
+            Array.isArray(this.configParam?.urls) &&
+            this.configParam.urls.length > 0
+        ) {
             for (const url of this.configParam.urls) {
                 this.#configureUrl(url);
             }
         } else if (isStringWithValue(this.configParam?.urls)) {
             this.#configureUrl(this.configParam.urls);
-        } else if (Array.isArray(this.configParam?.url)) {
-            this.config.urls = [];
+        } else if (
+            Array.isArray(this.configParam?.url) &&
+            this.configParam.url.length > 0
+        ) {
             for (const url of this.configParam.url) {
                 this.#configureUrl(url);
             }
