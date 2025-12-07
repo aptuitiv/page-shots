@@ -267,7 +267,7 @@ export class ConfigParser {
      * @param {Config} baseConfig The default configuration to use instead of the core default configuration
      */
     constructor(baseConfig?: Config) {
-        this.config = baseConfig ?? defaultConfig;
+        this.config = baseConfig ?? { ...defaultConfig };
         this.processFile = false;
         this.processSizes = true;
         this.processUrls = true;
