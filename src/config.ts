@@ -389,12 +389,13 @@ export class ConfigParser {
     /**
      * Set the base URL value
      *
+     * Remove the trailing slash from the base URL if it exists
      */
     #setBaseUrl() {
         if (isStringWithValue(this.configParam?.base)) {
-            this.config.baseUrl = this.configParam.base;
+            this.config.baseUrl = this.configParam.base.replace(/\/$/, '');
         } else if (isStringWithValue(this.configParam?.baseUrl)) {
-            this.config.baseUrl = this.configParam.baseUrl;
+            this.config.baseUrl = this.configParam.baseUrl.replace(/\/$/, '');
         }
     }
 
