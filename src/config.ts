@@ -23,10 +23,10 @@ import {
 
 // The clip parameter type
 type ClipParam = {
+    h: string | number;
+    w: string | number;
     x: string | number;
     y: string | number;
-    width: string | number;
-    height: string | number;
 };
 
 // The base configuration parameters without the "sizes" or "urls" properties because
@@ -409,8 +409,8 @@ export class ConfigParser {
             ) {
                 const x = parseInt(this.configParam.clip.x.toString(), 10);
                 const y = parseInt(this.configParam.clip.y.toString(), 10);
-                const w = parseInt(this.configParam.clip.width.toString(), 10);
-                const h = parseInt(this.configParam.clip.height.toString(), 10);
+                const w = parseInt(this.configParam.clip.w.toString(), 10);
+                const h = parseInt(this.configParam.clip.h.toString(), 10);
                 if (x >= 0 && y >= 0 && w > 0 && h > 0) {
                     this.config.clip = {
                         x,
