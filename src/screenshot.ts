@@ -287,7 +287,7 @@ const getScreenshots = async (config: Config): Promise<void> => {
                 // Queue the sizes to be processed
                 urlObject.sizes.forEach((size) => {
                     // Use the ConfigParser to parse the size object and get the size configuration
-                    const configParser = new ConfigParser();
+                    const configParser = new ConfigParser(urlObject);
                     configParser.setDoNotProcessUrls();
                     configParser.setDoNotProcessSizes();
 
@@ -299,13 +299,7 @@ const getScreenshots = async (config: Config): Promise<void> => {
                     delete sizeConfig.sizes;
                     delete sizeConfig.urls;
 
-                    // Create the size data object
-                    const sizeObject: SizeData = {
-                        ...urlObject,
-                        ...sizeConfig,
-                    };
-
-                    cluster.queue(sizeObject);
+                    cluster.queue(sizeConfig);
                 });
             } else {
                 // The URL has no configured screenshot sizes.
