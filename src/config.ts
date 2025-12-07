@@ -262,10 +262,23 @@ export class ConfigParser {
     /**
      * Constructor
      *
-     * @param {Config} baseConfig The default configuration to use instead of the core default configuration
+     * @param {Config|SizeConfig|UrlConfig} baseConfig The default configuration to use instead of the core default configuration
      */
-    constructor(baseConfig?: Config) {
-        this.config = baseConfig ?? { ...defaultConfig };
+    constructor(baseConfig?: Config | SizeConfig | UrlConfig) {
+        this.config = { ...defaultConfig };
+        if (isObjectWithValues(baseConfig)) {
+            // A base configuration object was passed in. Use it to set the configuration.
+            const baseConfigObject = { ...(baseConfig as Config) };
+            // For consistency, make sure that the sizes and urls values are always arrays.
+            if (!Array.isArray(baseConfigObject.sizes)) {
+                baseConfigObject.sizes = [];
+            }
+            if (!Array.isArray(baseConfigObject.urls)) {
+                baseConfigObject.urls = [];
+            }
+            this.config = baseConfigObject;
+        }
+
         this.processFile = false;
         this.processSizes = true;
         this.processUrls = true;
@@ -522,20 +535,20 @@ export class ConfigParser {
             isBoolLike(this.configParam?.fullscreen) ||
             isBoolLike(this.configParam?.full)
         ) {
-        let fullScreen: BoolLike = true;
-        if (isBoolLike(this.configParam?.fit)) {
-            fullScreen = this.configParam.fit;
-        } else if (isBoolLike(this.configParam?.fullscreen)) {
-            fullScreen = this.configParam.fullscreen;
-        } else if (isBoolLike(this.configParam?.full)) {
-            fullScreen = this.configParam.full;
+            let fullScreen: BoolLike = true;
+            if (isBoolLike(this.configParam?.fit)) {
+                fullScreen = this.configParam.fit;
+            } else if (isBoolLike(this.configParam?.fullscreen)) {
+                fullScreen = this.configParam.fullscreen;
+            } else if (isBoolLike(this.configParam?.full)) {
+                fullScreen = this.configParam.full;
+            }
+            if (isTrueLike(fullScreen)) {
+                this.config.fullScreen = true;
+            } else {
+                this.config.fullScreen = false;
+            }
         }
-        if (isTrueLike(fullScreen)) {
-            this.config.fullScreen = true;
-        } else {
-            this.config.fullScreen = false;
-        }
-    }
     }
 
     /**
