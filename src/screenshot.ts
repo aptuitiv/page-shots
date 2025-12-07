@@ -204,11 +204,12 @@ const getUrlPath = (url: UrlData): string => {
  * Sets up the URL object
  *
  * @param {UrlParamObject} url The URL object to setup
+ * @param {Config} config The configuration object
  * @returns {UrlData} The URL object
  */
-const setupUrl = (url: UrlParamObject): UrlData => {
+const setupUrl = (url: UrlParamObject, config: Config): UrlData => {
     // Use the ConfigParser to parse the URL object and get the URL configuration
-    const configParser = new ConfigParser();
+    const configParser = new ConfigParser(config);
     configParser.setDoNotProcessUrls();
     configParser.setDoNotProcessSizes();
 
@@ -279,7 +280,7 @@ const getScreenshots = async (config: Config): Promise<void> => {
 
         // Queue the URLs to be processed
         for (const url of config.urls) {
-            const urlObject = setupUrl(url);
+            const urlObject = setupUrl(url, config);
 
             if (urlObject.sizes.length > 0) {
                 // The URL has one or more configured screenshot sizes.
