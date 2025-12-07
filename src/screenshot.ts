@@ -27,6 +27,7 @@ type UrlData = UrlConfig & {
 
 // The size data object after it has been set up
 type SizeData = SizeConfig & {
+    path: string;
     url: string;
 };
 
@@ -39,11 +40,11 @@ type SizeData = SizeConfig & {
  * {url} - The URL the screenshot is for
  * {width} - The width of the screenshot
  *
- * @param {object} url The URL object
+ * @param {UrlData|SizeData} url The URL object
  * @param {string} name The name format to use
  * @returns {string} The formatted file name
  */
-const formatFileName = (url: UrlData, name: string): string => {
+const formatFileName = (url: UrlData | SizeData, name: string): string => {
     // Set up the "url" portion of the name
     let urlName = url.url.replace(/http(s?):\/\//, '');
     urlName = sanitize(urlName, { replacement: '-' });
@@ -174,10 +175,10 @@ const getScreenshot = async (page: Page, url: UrlData) => {
 /**
  * Gets the path to save the screenshot at
  *
- * @param {UrlData} url The URL object
+ * @param {UrlData|SizeData} url The URL object
  * @returns {string}
  */
-const getUrlPath = (url: UrlData): string => {
+const getUrlPath = (url: UrlData | SizeData): string => {
     // Set up the file name
     let filename = '';
     if (isStringWithValue(url.fileName)) {
@@ -298,8 +299,15 @@ const getScreenshots = async (config: Config): Promise<void> => {
                     // Remove unnecessary configuration values
                     delete sizeConfig.sizes;
                     delete sizeConfig.urls;
+                    const sizeData: SizeData = {
+                        ...sizeConfig,
+                        url: urlObject.url,
+                        path: '',
+                    };
+                    // Set the path to the path of the URL
+                    sizeData.path = getUrlPath(sizeData);
 
-                    cluster.queue(sizeConfig);
+                    cluster.queue(sizeData);
                 });
             } else {
                 // The URL has no configured screenshot sizes.
