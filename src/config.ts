@@ -752,9 +752,9 @@ export class ConfigParser {
     /**
      * Sets the wait until value to use for the page
      *
-     * @link https://www.browserstack.com/guide/puppeteer-waituntil
-     * @link https://pptr.dev/api/puppeteer.puppeteerlifecycleevent
-     * @link https://screenshotone.com/blog/puppeteer-wait-until-the-page-is-ready/
+     * https://www.browserstack.com/guide/puppeteer-waituntil
+     * https://pptr.dev/api/puppeteer.puppeteerlifecycleevent
+     * https://screenshotone.com/blog/puppeteer-wait-until-the-page-is-ready/
      */
     #setWaitUntil() {
         if (isStringWithValue(this.configParam?.waitUntil)) {
