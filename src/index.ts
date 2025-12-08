@@ -90,10 +90,13 @@ program
         'A viewport size to capture the screenshot in. The format is WIDTHxHEIGHT. For example, 800x400 for a width of 800px and a height of 400px. Use "--fit" if you want the screenshot to only capture the viewport width and height.',
         []
     )
-    .option(
-        '-t, --type <string>',
-        'The file type to use for the screenshots. "jpg", "png", or "webp"',
-        'jpg'
+    .addOption(
+        new Option(
+            '-t, --type <string>',
+            'The file type to use for the screenshots.'
+        )
+            .choices(['jpg', 'png', 'webp'])
+            .default('jpg')
     )
     .option('-u, --url <string...>', 'URL to get the screenshot of.', [])
     .option(
@@ -104,7 +107,7 @@ program
     .addOption(
         new Option(
             '--waitUntil <string>',
-            'The wait until value to use for the page. Allowed values are: domcontentloaded, load, networkidle0, networkidle2.'
+            'The wait until value to use for the page.'
         ).choices(['domcontentloaded', 'load', 'networkidle0', 'networkidle2'])
     )
     .option(
