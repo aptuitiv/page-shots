@@ -6,10 +6,11 @@ import fs from 'fs-extra';
 import { dirname, extname, join } from 'path';
 import { Cluster } from 'puppeteer-cluster';
 import sanitize from 'sanitize-filename';
-import { Page, type ScreenshotOptions } from 'puppeteer';
+import { GoToOptions, Page, type ScreenshotOptions } from 'puppeteer';
+import { setTimeout } from 'node:timers/promises';
 
 // Library
-import { logError, logMessage, logSuccess } from './lib/log.js';
+import { logError, logInfo, logMessage, logSuccess } from './lib/log.js';
 import { getElapsedTime, getStartTime } from './lib/time.js';
 import { isStringWithValue } from './lib/types.js';
 import {
@@ -110,7 +111,7 @@ const formatFileName = (url: UrlData | SizeData, name: string): string => {
  * @param {UrlData} url The URL object
  */
 const getScreenshot = async (page: Page, url: UrlData) => {
-    //const pageStartTime = getStartTime();
+    // const pageStartTime = getStartTime();
 
     let message = `Viewport size: ${url.width}px / ${url.height}px`;
     if (url.clip) {
@@ -142,8 +143,14 @@ const getScreenshot = async (page: Page, url: UrlData) => {
     });
 
     // Go to the URL
+    const goToOptions: GoToOptions = {};
+    await page.goto(url.url, goToOptions);
 
-    await page.goto(url.url);
+    if (url.delay > 0) {
+        // Timeout based on https://github.com/puppeteer/puppeteer/pull/11780#issuecomment-1975869042
+        logInfo(`Delaying ${url.url} ${url.delay} milliseconds`);
+        await setTimeout(url.delay);
+    }
 
     // Save image screenshot
     try {
