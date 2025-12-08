@@ -123,7 +123,7 @@ type Clip = {
 type BaseConfig = {
     baseUrl: string;
     clip: false | Clip;
-    delay: number | string;
+    delay: number;
     deviceScaleFactor: number;
     dir: string;
     fileName: string;
