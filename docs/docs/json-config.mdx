@@ -46,6 +46,7 @@ Only the `urls` value is actually required. If the others aren't set then the de
 | sizes                        | An array of viewport sizes to get the screenshots in. Defaults to `1300x900` if not set.                                                                                                     |
 | type                         | The file type to use for the screenshots. `jpg`, `png`, or `webp`. Defaults to `jpg` if not set.                                                                                             |
 | urls                         | An array of URLs to get screenshots for. You can either set each one as a string, or they can be a JSON object overriding configuration options for each URL.                                |
+| waitUntil                    | The wait until value to use for the page. Allowed values are: `domcontentloaded`, `load`, `networkidle0`, `networkidle2`. Defaults to `load`.                                                |
 | width                        | Integer width of the viewport to take the screenshot in. Defaults to `1300` if no sizes are set.                                                                                             |
 
 ## Minimum JSON file

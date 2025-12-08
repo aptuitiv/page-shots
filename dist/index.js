@@ -1,7 +1,7 @@
 #! /usr/bin/env node
 
 // src/index.ts
-import { Command } from "commander";
+import { Command, Option } from "commander";
 import fs3 from "fs-extra";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -14,6 +14,17 @@ import { extname } from "path";
 import chalk from "chalk";
 import fancyLog from "fancy-log";
 import logSymbols from "log-symbols";
+var logInfo = (message, additionalMessage) => {
+  if (additionalMessage) {
+    fancyLog(
+      logSymbols.info,
+      chalk.blue(message),
+      chalk.cyan(additionalMessage)
+    );
+  } else {
+    fancyLog(logSymbols.info, chalk.blue(message));
+  }
+};
 var logMessage = (message, additionalMessage) => {
   fancyLog(chalk.cyan(message), additionalMessage ?? "");
 };
@@ -84,6 +95,8 @@ var defaultConfig = {
   sizes: [],
   // The list of URLs to get screenshots for
   urls: [],
+  // The wait until value to use for the page
+  waitUntil: "load",
   // Holds the viewport width to get the screenshot in
   width: 1300
 };
@@ -250,6 +263,7 @@ var ConfigParser = class {
     if (this.processSizes) {
       this.#setViewportSizes();
     }
+    this.#setWaitUntil();
     this.#setWidth();
   }
   /**
@@ -528,6 +542,26 @@ var ConfigParser = class {
     }
   }
   /**
+   * Sets the wait until value to use for the page
+   *
+   * @link https://www.browserstack.com/guide/puppeteer-waituntil
+   * @link https://pptr.dev/api/puppeteer.puppeteerlifecycleevent
+   * @link https://screenshotone.com/blog/puppeteer-wait-until-the-page-is-ready/
+   */
+  #setWaitUntil() {
+    if (isStringWithValue(this.configParam?.waitUntil)) {
+      const waitUntil = this.configParam.waitUntil.toLowerCase();
+      if ([
+        "domcontentloaded",
+        "load",
+        "networkidle0",
+        "networkidle2"
+      ].includes(waitUntil)) {
+        this.config.waitUntil = waitUntil;
+      }
+    }
+  }
+  /**
    * Sets the width of the viewport to take the screenshot in
    */
   #setWidth() {
@@ -615,6 +649,7 @@ import fs2 from "fs-extra";
 import { dirname, extname as extname3, join as join2 } from "path";
 import { Cluster } from "puppeteer-cluster";
 import sanitize2 from "sanitize-filename";
+import { setTimeout } from "timers/promises";
 
 // src/lib/time.ts
 function getStartTime() {
@@ -693,7 +728,14 @@ var getScreenshot = async (page, url) => {
     height: url.height,
     width: url.width
   });
-  await page.goto(url.url);
+  const goToOptions = {
+    waitUntil: url.waitUntil
+  };
+  await page.goto(url.url, goToOptions);
+  if (url.delay > 0) {
+    logInfo(`Delaying ${url.url} ${url.delay} milliseconds`);
+    await setTimeout(url.delay);
+  }
   try {
     const screenshotConfig = {
       fullPage: url.fullScreen,
@@ -858,6 +900,11 @@ program.version(thisPackageJson.version).description(thisPackageJson.description
   "-w, --width <integer>",
   "Integer width of the viewport to take the screenshot in.",
   "1300"
+).addOption(
+  new Option(
+    "--waitUntil <string>",
+    "The wait until value to use for the page. Allowed values are: domcontentloaded, load, networkidle0, networkidle2."
+  ).choices(["domcontentloaded", "load", "networkidle0", "networkidle2"])
 ).option(
   "--webp",
   'Set the image type for screenshots to be "webp". Alternate method to using -t.'

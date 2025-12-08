@@ -1,7 +1,7 @@
 #! /usr/bin/env node
 
 // Packages
-import { Command } from 'commander';
+import { Command, Option } from 'commander';
 import fs from 'fs-extra';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -100,6 +100,12 @@ program
         '-w, --width <integer>',
         'Integer width of the viewport to take the screenshot in.',
         '1300'
+    )
+    .addOption(
+        new Option(
+            '--waitUntil <string>',
+            'The wait until value to use for the page. Allowed values are: domcontentloaded, load, networkidle0, networkidle2.'
+        ).choices(['domcontentloaded', 'load', 'networkidle0', 'networkidle2'])
     )
     .option(
         '--webp',

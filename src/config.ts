@@ -4,7 +4,7 @@
 
 import fs from 'fs-extra';
 import { extname } from 'path';
-import { type ImageFormat } from 'puppeteer';
+import { type ImageFormat, type PuppeteerLifeCycleEvent } from 'puppeteer';
 
 // Library
 import { logError } from './lib/log.js';
@@ -75,6 +75,13 @@ type BaseConfigParam = {
     type?: ImageFormat;
     // The list of URLs to get screenshots for
     urls?: string[]; // JSON config
+    // The wait until value to use for the page
+    // See https://pptr.dev/api/puppeteer.puppeteerlifecycleevent
+    // domcontentloaded: Wait for the for the DOMContentLoaded event, which occurs once the HTML document has been completely loaded and parsed. This does not guarantee that stylesheets, images, or any other resources are loaded.
+    // load: Wait for the load event. This signals that the entire page and all its resources such as images, stylesheets, javascript, etc. have been fully loaded.
+    // networkidle0: The networkidle0 event is fired when there are activenetwork connections for at least 500 ms.
+    // networkidle2: The networkidle2 event is fired when there are no more than 2 active network connections for at least 500 ms.
+    waitUntil?: string;
     // Whether or not to save the screenshot as a webp
     webp?: BoolLike;
     // The width of the viewport to take the screenshot in
@@ -132,6 +139,7 @@ type BaseConfig = {
     height: number;
     nameFormat: string;
     quality: number;
+    waitUntil: PuppeteerLifeCycleEvent;
     width: number;
 };
 
@@ -183,6 +191,8 @@ export const defaultConfig: Config = {
     sizes: [],
     // The list of URLs to get screenshots for
     urls: [],
+    // The wait until value to use for the page
+    waitUntil: 'load',
     // Holds the viewport width to get the screenshot in
     width: 1300,
 };
@@ -385,6 +395,7 @@ export class ConfigParser {
         if (this.processSizes) {
             this.#setViewportSizes();
         }
+        this.#setWaitUntil();
         this.#setWidth();
     }
 
@@ -734,6 +745,29 @@ export class ConfigParser {
                 //     height,
                 // };
                 // this.config.sizes.push(sizeConfig);
+            }
+        }
+    }
+
+    /**
+     * Sets the wait until value to use for the page
+     *
+     * @link https://www.browserstack.com/guide/puppeteer-waituntil
+     * @link https://pptr.dev/api/puppeteer.puppeteerlifecycleevent
+     * @link https://screenshotone.com/blog/puppeteer-wait-until-the-page-is-ready/
+     */
+    #setWaitUntil() {
+        if (isStringWithValue(this.configParam?.waitUntil)) {
+            const waitUntil = this.configParam.waitUntil.toLowerCase();
+            if (
+                [
+                    'domcontentloaded',
+                    'load',
+                    'networkidle0',
+                    'networkidle2',
+                ].includes(waitUntil)
+            ) {
+                this.config.waitUntil = waitUntil as PuppeteerLifeCycleEvent;
             }
         }
     }
