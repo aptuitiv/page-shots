@@ -544,9 +544,9 @@ var ConfigParser = class {
   /**
    * Sets the wait until value to use for the page
    *
-   * @link https://www.browserstack.com/guide/puppeteer-waituntil
-   * @link https://pptr.dev/api/puppeteer.puppeteerlifecycleevent
-   * @link https://screenshotone.com/blog/puppeteer-wait-until-the-page-is-ready/
+   * https://www.browserstack.com/guide/puppeteer-waituntil
+   * https://pptr.dev/api/puppeteer.puppeteerlifecycleevent
+   * https://screenshotone.com/blog/puppeteer-wait-until-the-page-is-ready/
    */
   #setWaitUntil() {
     if (isStringWithValue(this.configParam?.waitUntil)) {
@@ -649,6 +649,9 @@ import fs2 from "fs-extra";
 import { dirname, extname as extname3, join as join2 } from "path";
 import { Cluster } from "puppeteer-cluster";
 import sanitize2 from "sanitize-filename";
+import puppeteerExtraModule from "puppeteer-extra";
+import AdblockerPluginModule from "puppeteer-extra-plugin-adblocker";
+import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import { setTimeout } from "timers/promises";
 
 // src/lib/time.ts
@@ -664,6 +667,8 @@ function getElapsedTime(startTime) {
 }
 
 // src/screenshot.ts
+var puppeteerExtra = puppeteerExtraModule;
+var AdblockerPlugin = AdblockerPluginModule;
 var formatFileName = (url, name) => {
   let urlName = url.url.replace(/http(s?):\/\//, "");
   urlName = sanitize2(urlName, { replacement: "-" });
@@ -791,6 +796,9 @@ var setupUrl = (url, config) => {
       urlData.url = urlData.baseUrl + urlData.url;
     }
   }
+  if (urlData.url.match(/^http(s?):\/\//) === null) {
+    urlData.url = `https://${urlData.url}`;
+  }
   return urlData;
 };
 var getScreenshots = async (config) => {
@@ -799,9 +807,12 @@ var getScreenshots = async (config) => {
     logMessage(
       `Getting screenshot${config.urls.length === 1 ? "" : "s"} for ${config.urls.length} URL${config.urls.length === 1 ? "" : "s"}.`
     );
+    puppeteerExtra.use(StealthPlugin());
+    puppeteerExtra.use(AdblockerPlugin());
     const cluster = await Cluster.launch({
       concurrency: Cluster.CONCURRENCY_CONTEXT,
-      maxConcurrency: 10
+      maxConcurrency: 10,
+      puppeteer: puppeteerExtra
     });
     await cluster.task(async ({ page, data: url }) => {
       await getScreenshot(page, url);
@@ -892,10 +903,11 @@ program.version(thisPackageJson.version).description(thisPackageJson.description
   "-s, --size <string...>",
   'A viewport size to capture the screenshot in. The format is WIDTHxHEIGHT. For example, 800x400 for a width of 800px and a height of 400px. Use "--fit" if you want the screenshot to only capture the viewport width and height.',
   []
-).option(
-  "-t, --type <string>",
-  'The file type to use for the screenshots. "jpg", "png", or "webp"',
-  "jpg"
+).addOption(
+  new Option(
+    "-t, --type <string>",
+    "The file type to use for the screenshots."
+  ).choices(["jpg", "png", "webp"]).default("jpg")
 ).option("-u, --url <string...>", "URL to get the screenshot of.", []).option(
   "-w, --width <integer>",
   "Integer width of the viewport to take the screenshot in.",
@@ -903,7 +915,7 @@ program.version(thisPackageJson.version).description(thisPackageJson.description
 ).addOption(
   new Option(
     "--waitUntil <string>",
-    "The wait until value to use for the page. Allowed values are: domcontentloaded, load, networkidle0, networkidle2."
+    "The wait until value to use for the page."
   ).choices(["domcontentloaded", "load", "networkidle0", "networkidle2"])
 ).option(
   "--webp",

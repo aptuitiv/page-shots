@@ -65,6 +65,7 @@
         "puppeteer": "^24.32.0",
         "puppeteer-cluster": "^0.25.0",
         "puppeteer-extra": "^3.3.6",
+        "puppeteer-extra-plugin-adblocker": "^2.13.6",
         "puppeteer-extra-plugin-stealth": "^2.11.2",
         "sanitize-filename": "^1.6.3"
     },

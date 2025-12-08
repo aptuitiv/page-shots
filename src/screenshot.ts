@@ -14,6 +14,8 @@ import { Cluster } from 'puppeteer-cluster';
 import sanitize from 'sanitize-filename';
 import { GoToOptions, Page, type ScreenshotOptions } from 'puppeteer';
 import puppeteerExtraModule, { type PuppeteerExtra } from 'puppeteer-extra';
+import AdblockerPluginModule from 'puppeteer-extra-plugin-adblocker';
+import type { PluginOptions } from 'puppeteer-extra-plugin-adblocker';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import { setTimeout } from 'node:timers/promises';
 
@@ -32,6 +34,11 @@ import {
 // This is a workaround to get the type for the puppeteer-extra module
 // The default export doesn't have "use" in the type definition. This fixes the type error.
 const puppeteerExtra = puppeteerExtraModule as unknown as PuppeteerExtra;
+
+// Type assertion for AdblockerPlugin - TypeScript doesn't recognize the default export as callable
+const AdblockerPlugin = AdblockerPluginModule as unknown as (
+    options?: Partial<PluginOptions>
+) => import('puppeteer-extra-plugin-adblocker').PuppeteerExtraPluginAdblocker;
 
 // The URL data object after it has been set up
 type UrlData = UrlConfig & {
@@ -284,6 +291,7 @@ const getScreenshots = async (config: Config): Promise<void> => {
         // Use the StealthPlugin to help prevent detection by anti-bot services
         // https://screenshotone.com/blog/how-to-take-a-screenshot-with-puppeteer/#preventing-puppeteer-detection
         puppeteerExtra.use(StealthPlugin());
+        puppeteerExtra.use(AdblockerPlugin());
 
         // The puppeteer-cluster library is used to launch a cluster of browsers and pages to get the screenshots.
         // This enables us to get the screenshots faster by using multiple browsers and pages in parallel.
