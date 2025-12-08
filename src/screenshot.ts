@@ -117,8 +117,6 @@ const formatFileName = (url: UrlData | SizeData, name: string): string => {
  * @param {UrlData} url The URL object
  */
 const getScreenshot = async (page: Page, url: UrlData) => {
-    // const pageStartTime = getStartTime();
-
     let message = `Viewport size: ${url.width}px / ${url.height}px`;
     if (url.clip) {
         message += `, Clip: ${url.clip.x}px / ${url.clip.y}px / ${url.clip.width}px / ${url.clip.height}px`;
@@ -133,13 +131,6 @@ const getScreenshot = async (page: Page, url: UrlData) => {
     if (dir.length > 0 && !fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
     }
-
-    // Set up the page load event listener
-    // page.on('load', () => {
-    //     // Get the page elapsed time
-    //     const time = getElapsedTime(pageStartTime);
-    //     logSuccess(`${url.url} loaded in ${time}s`);
-    // });
 
     // Set the viewport size
     await page.setViewport({
@@ -163,10 +154,6 @@ const getScreenshot = async (page: Page, url: UrlData) => {
 
     // Save image screenshot
     try {
-        // logMessage(
-        //     `Taking screenshot of ${url.path} (${url.width}px / ${url.height}px)`
-        // );
-
         // Set up the screenshot configuration
         const screenshotConfig: ScreenshotOptions = {
             fullPage: url.fullScreen,

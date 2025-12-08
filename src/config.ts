@@ -653,16 +653,6 @@ export class ConfigParser {
             objectValueIsStringWithValue(url, 'url')
         ) {
             this.config.urls.push(url);
-            // const configObj = new ConfigParser();
-            // configObj.setDoNotProcessUrls();
-            // configObj.parse(url);
-            // const config = configObj.getConfig();
-            // delete config.urls;
-            // const urlConfig: UrlConfig = {
-            //     ...config,
-            //     url: url.url,
-            // };
-            // this.config.urls.push(urlConfig);
         } else if (isStringWithValue(url)) {
             this.config.urls.push({ url });
         }
@@ -732,19 +722,6 @@ export class ConfigParser {
             const height = parseInt(size.height.toString(), 10);
             if (width > 0 && height > 0) {
                 this.config.sizes.push(size);
-                // const configObj = new ConfigParser();
-                // configObj.setDoNotProcessUrls();
-                // configObj.setDoNotProcessSizes();
-                // configObj.parse(size);
-                // const config = configObj.getConfig();
-                // delete config.sizes;
-                // delete config.urls;
-                // const sizeConfig: SizeConfig = {
-                //     ...config,
-                //     width,
-                //     height,
-                // };
-                // this.config.sizes.push(sizeConfig);
             }
         }
     }
