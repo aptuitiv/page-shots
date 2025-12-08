@@ -1,5 +1,11 @@
 /* ===========================================================================
     Handle getting the screenshots
+    Resources:
+    - https://pptr.dev/
+    - https://github.com/thomasdondorf/puppeteer-cluster
+    - https://screenshotone.com/blog/how-to-take-a-screenshot-with-puppeteer/
+    - https://screenshotone.com/blog/puppeteer-wait-until-the-page-is-ready/
+    - https://screenshotone.com/blog/a-complete-guide-on-how-to-take-full-page-screenshots-with-puppeteer-playwright-or-selenium/
 =========================================================================== */
 
 import fs from 'fs-extra';
