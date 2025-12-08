@@ -75,6 +75,8 @@ type BaseConfigParam = {
     type?: ImageFormat;
     // The list of URLs to get screenshots for
     urls?: string[]; // JSON config
+    // Whether or not to save the screenshot as a webp
+    webp?: BoolLike;
     // The width of the viewport to take the screenshot in
     width?: number | string;
 };
@@ -529,6 +531,9 @@ export class ConfigParser {
         }
         if (isTrueLike(this.configParam?.png)) {
             this.config.fileType = 'png';
+        }
+        if (isTrueLike(this.configParam?.webp)) {
+            this.config.fileType = 'webp';
         }
     }
 

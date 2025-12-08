@@ -92,7 +92,7 @@ program
     )
     .option(
         '-t, --type <string>',
-        'The file type to use for the screenshots. "jpg" or "png"',
+        'The file type to use for the screenshots. "jpg", "png", or "webp"',
         'jpg'
     )
     .option('-u, --url <string...>', 'URL to get the screenshot of.', [])
@@ -100,6 +100,10 @@ program
         '-w, --width <integer>',
         'Integer width of the viewport to take the screenshot in.',
         '1300'
+    )
+    .option(
+        '--webp',
+        'Set the image type for screenshots to be "webp". Alternate method to using -t.'
     )
     .action((options) => {
         const configParser = new ConfigParser();

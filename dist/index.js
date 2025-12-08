@@ -1,5 +1,885 @@
 #! /usr/bin/env node
-import{Command as te}from"commander";import se from"fs-extra";import D from"path";import{fileURLToPath as oe}from"url";import V from"fs-extra";import{extname as I}from"path";import c from"chalk";import f from"fancy-log";import T from"log-symbols";var d=(e,i)=>{f(c.cyan(e),i??"")};var p=(e,i)=>{i?f(T.success,c.green(e),c.cyan(i)):f(T.success,c.green(e))};var g=(e,i)=>{f(T.error,c.red(e)),i&&(f(c.red(i.message)),f(c.red(i.stack)))};var E=e=>["n","no",!1,"false"].includes(e),m=e=>["y","yes",!0,"true"].includes(e),b=e=>m(e)||E(e),N=e=>typeof e=="boolean",u=e=>typeof e<"u",A=e=>!Number.isNaN(e)&&typeof e=="number"&&e!==1/0,H=e=>typeof e=="string"&&e.trim().length>0&&!Number.isNaN(Number(e))&&e!=="Infinity",a=e=>A(e)||H(e),j=e=>Object.prototype.toString.call(e)==="[object Object]",y=e=>Object.prototype.toString.call(e)==="[object Object]"&&Object.keys(e).length>0,J=e=>typeof e=="string",o=e=>J(e)&&e.trim().length>0;var U=(e,i)=>j(e)&&i in e;var h=(e,i)=>U(e,i)&&a(e[i]);var z=(e,i)=>U(e,i)&&o(e[i]);var R={baseUrl:"",clip:!1,delay:0,dir:"",fileName:"",fileType:"jpg",fullScreen:!0,height:900,nameFormat:"{url}-{width}",quality:100,sizes:[],urls:[],width:1300},w=3e4,O=e=>{let i=0;if(a(e)){let t=parseInt(e.toString(),10);t>0&&(i=t)}return i},L=e=>{let i=!1;if(o(e)){let t=e.toLowerCase().replace(".","");["jpg","jpeg","png"].includes(t)&&(t==="jpeg"&&(t="jpg"),i=t)}return i},S=class{config;configParam;processFile;processSizes;processUrls;constructor(i){this.config=i??R,this.processFile=!1,this.processSizes=!0,this.processUrls=!0}setProcessConfigFile(){this.processFile=!0}setDoNotProcessSizes(){this.processSizes=!1}setDoNotProcessUrls(){this.processUrls=!1}parse(i){y(i)&&(this.setProcessConfigFile&&o(i?.config)&&this.#o(i.config),this.#t(i))}#o(i){try{let t="shots.json";typeof i=="string"&&i.length>0&&(t=i,I(i).toLowerCase().replace(".","").length===0&&(t+=".json")),V.existsSync(t)?this.#t(V.readJsonSync(t)):g(`The JSON config file "${t}" could not be found`)}catch(t){g(`Error while processing the JSON config file ${i}`,t),process.exit()}}#t(i){this.configParam=i,this.#n(),this.#r(),this.#a(),this.#g(),this.#c(),this.#h(),this.#f(),this.#l(),this.#p(),this.processUrls&&this.#m(),this.processSizes&&this.#u(),this.#y()}getConfig(){return this.config}hasUrls(){return this.config.urls.length>0}#n(){o(this.configParam?.base)?this.config.baseUrl=this.configParam.base:o(this.configParam?.baseUrl)&&(this.config.baseUrl=this.configParam.baseUrl)}#r(){if(y(this.configParam?.clip)){if(h(this.configParam.clip,"x")&&h(this.configParam.clip,"y")&&h(this.configParam.clip,"w")&&h(this.configParam.clip,"h")){let i=parseInt(this.configParam.clip.x.toString(),10),t=parseInt(this.configParam.clip.y.toString(),10),s=parseInt(this.configParam.clip.width.toString(),10),n=parseInt(this.configParam.clip.height.toString(),10);i>=0&&t>=0&&s>0&&n>0&&(this.config.clip={x:i,y:t,width:s,height:n})}}else if(a(this.configParam?.clipWidth)&&a(this.configParam?.clipHeight)){let i=a(this.configParam?.clipX)?this.configParam.clipX:0,t=a(this.configParam?.clipY)?this.configParam.clipY:0,s=parseInt(i.toString(),10),n=parseInt(t.toString(),10),r=parseInt(this.configParam.clipWidth.toString(),10),l=parseInt(this.configParam.clipHeight.toString(),10);s>=0&&n>=0&&r>0&&l>0&&(this.config.clip={x:s,y:n,width:r,height:l})}}#a(){if(a(this.configParam?.delay)){let i=parseInt(this.configParam.delay.toString(),10);i>0&&(i>w&&(i=w),this.config.delay=i)}}#g(){o(this.configParam?.dir)&&(this.config.dir=this.configParam.dir.replace(/\/$/,""))}#c(){if(o(this.configParam?.name))if(this.configParam.name.includes("{"))this.config.nameFormat=this.configParam.name;else{let i=L(I(this.configParam.name));this.config.fileName=this.configParam.name,i&&(this.config.fileType=i)}}#h(){if(o(this.configParam?.type)){let i=L(this.configParam.type);i&&(i==="jpg"&&(i="jpeg"),this.config.fileType=i)}m(this.configParam?.jpg)&&(this.config.fileType="jpeg"),m(this.configParam?.png)&&(this.config.fileType="png")}#f(){let i=!0;b(this.configParam?.fit)?i=this.configParam.fit:b(this.configParam?.fullscreen)?i=this.configParam.fullscreen:b(this.configParam?.full)&&(i=this.configParam.full),m(i)?this.config.fullScreen=!0:this.config.fullScreen=!1}#l(){let i=O(this.configParam?.height);i>0&&(this.config.height=i)}#p(){if(a(this.configParam?.quality)){let i=parseInt(this.configParam.quality.toString(),10);i>0&&i<=100&&(this.config.quality=i)}}#m(){if(Array.isArray(this.configParam?.urls)){this.config.urls=[];for(let i of this.configParam.urls)this.#e(i)}else if(o(this.configParam?.urls))this.#e(this.configParam.urls);else if(Array.isArray(this.configParam?.url)){this.config.urls=[];for(let i of this.configParam.url)this.#e(i)}else o(this.configParam?.url)&&this.#e(this.configParam.url)}#e(i){y(i)&&z(i,"url")?this.config.urls.push(i):o(i)&&this.config.urls.push({url:i})}#u(){u(this.configParam?.sizes)?this.#s(this.configParam.sizes):u(this.configParam?.size)&&this.#s(this.configParam.size)}#s(i){if(o(i))this.#i(i);else if(Array.isArray(i))for(let t of i)this.#i(t);else y(i)&&this.#i(i)}#i(i){if(o(i)){let t=i.split("x");if(t.length===2){let s=parseInt(t[0],10),n=parseInt(t[1],10);s>0&&n>0&&this.config.sizes.push({height:n,width:s})}}else if(h(i,"width")&&h(i,"height")){let t=parseInt(i.width.toString(),10),s=parseInt(i.height.toString(),10);t>0&&s>0&&this.config.sizes.push(i)}}#y(){let i=O(this.configParam?.width);i>0&&(this.config.width=i)}};import{createWriteStream as X}from"fs";import{extname as Y,join as _}from"path";import Q from"chalk";import G from"sanitize-filename";import M from"ora";var K={dir:"",filename:"shots.json",setDir(e){if(typeof e=="string"){let i=e.trim();i.length>1&&(i.substring(i.length-1)!=="/"&&(i=`${i}/`),this.dir=i)}},setFilename(e){let i=Y(e).toLowerCase().replace(".",""),t=e;i!=="json"&&(t+=".json"),t=G(t,{replacement:"-"}),this.filename=t},build(){let e={baseUrl:"",name:"{url}-{width}",type:"jpg",urls:[],sizes:["1300x800"]},i=_(this.dir,this.filename),t=M({text:`Creating ${this.filename}`,spinner:"arc"}).start(),s=X(i,{flags:"w"});s.write(JSON.stringify(e,null,4)),s.close(),t.succeed(Q.green(`${this.filename} created`))}},P=K;import $ from"fs-extra";import{dirname as Z,extname as q,join as ee}from"path";import{Cluster as k}from"puppeteer-cluster";import B from"sanitize-filename";function C(){return process.hrtime.bigint()}function F(e){let i=process.hrtime.bigint(),t=Number(e);return((Number(i)-t)/1e9).toFixed(4)}var ie={config:{},async run(e){this.config=e;try{let i=C(),t=await k.launch({concurrency:k.CONCURRENCY_CONTEXT,maxConcurrency:10});await t.task(async({page:n,data:r})=>{await this.getScreenshot(n,r)});for(let n of this.config.urls){let r=this.setupUrl(n);r.sizes.length>0||t.queue(r)}await t.idle(),await t.close();let s=F(i);d(`Total time to get screenshots: ${s}s`)}catch(i){g("Error getting screenshots",i),process.exit(1)}},async getScreenshot(e,i){let t=C();e.on("load",()=>{let s=F(t);p(`${i.url} loaded in ${s}s`)}),await e.setViewport({width:i.width,height:i.height}),d(`Loading ${i.url}. Viewport size: ${i.width}px / ${i.height}px`),await e.goto(i.url);try{d(`Taking screenshot of ${i.path} (${i.width}px / ${i.height}px)`),await e.screenshot(this.getScreenshotConfig(i)),p(`Saved ${i.path} (${i.width}px / ${i.height}px)`)}catch(s){g("Error while taking the screenshot",s)}},getScreenshotConfig(e){let i={fullPage:e.fullScreen,path:e.path,type:e.type};return e.type==="jpg"&&(i.quality=e.quality,i.type="jpeg"),e.clip&&(i.fullPage=!1,i.clip=e.clip),i},createDir(e){let i=Z(e.path);i.length>0&&!$.existsSync(i)&&$.mkdirSync(i,{recursive:!0})},setupUrl(e){o(e.baseUrl)||(e.baseUrl=this.config.baseUrl),o(e.baseUrl)&&e.url.substring(0,e.baseUrl.length)!==e.baseUrl&&e.url.match(/^http(s?):\/\//)===null&&(e.url.substring(0,1)!=="/"&&(e.url=`/${e.url}`),e.url=e.baseUrl+e.url);let{clip:i}=this.config;u(e.clip)&&(i=e.clip,delete e.clip),i=this.config.processClip(i),i!==!1&&(e.clip=i),e.delay=this.config.processDelay(e?.delay),this.config.delay>e.delay&&(e.delay=this.config.delay),e.dir=this.getDir(e);let t=this.config.processFitAndFullScreen(e);return t===null&&(t=this.config.fullScreen),N(t)&&(e.fullScreen=t),e.height=this.config.processHeightWidth(e?.height),e.height===0&&this.config.height>0&&(e.height=this.config.height),e.type=this.getFileType(e),e.quality=this.config.processQuality(e?.quality),this.config.quality<e.quality&&(e.quality=this.config.quality),e.sizes=this.config.processViewportSizes(e?.sizes),e.sizes.length===0&&this.config.sizes.length>0&&(e.sizes=this.config.sizes),e.width=this.config.processHeightWidth(e?.width),e.width===0&&this.config.width>0&&(e.width=this.config.width),o(e.name)?e.name.search(!0)?(e.filename=this.formatFileName(e,e.name),e.type=this.getFileTypeFromFilename(e)):(e.filename=e.name,e.type=this.getFileTypeFromFilename(e)):(e.filename=this.formatFileName(e,this.config.nameFormat),e.type=this.getFileTypeFromFilename(e)),e.filename=this.getFilename(e),e.path=this.getPath(e),e.type=this.getFileTypeFromFilename(e),e},getDir(e){let i=this.config.processDir(e?.dir);return i.length===0&&this.config.dir.length>0&&(i=this.config.dir),i},getFilename(e){let i="";o(e.name)?e.name.search(!0)?i=this.formatFileName(e,e.name):i=e.name:o(this.config.nameFormat)?i=this.formatFileName(e,this.config.nameFormat):o(this.config.fileName)?i=this.config.fileName:i=this.formatFileName(e,"{url}");let t=q(i).toLowerCase().replace(".","");return o(t)||(t=this.getFileType(e),i+=`.${t}`),i},getPath(e){let i=this.getDir(e),t="";return o(e.filename)?t=e.filename:t=this.getFilename(e),ee(i,t)},getFileType(e,i){let t="";return o(i)?t=this.config.validateFileType(i):t=this.config.validateFileType(e?.type),t||(t=this.config.fileType),t},getFileTypeFromFilename(e){return this.getFileType(e,q(e.filename).toLowerCase().replace(".",""))},formatFileName(e,i){let t=e.url.replace(/http(s?):\/\//,"");t=B(t,{replacement:"-"}),t=t.replace(/\.+/g,"-"),t=t.replace(/-{2,}/g,"-"),t.substring(t.length-1)==="-"&&(t=t.substring(0,t.length-1)),t.substring(0,1)==="-"&&(t=t.substring(1));let s=e.url.replace(/http(s?):\/\//,""),n=s.split("/");s=s.replace(n[0],"").trim(),s==="/"||s.length===0?s="home":(s.substring(0,1)==="/"&&(s=s.substring(1)),s=B(s,{replacement:"-"}),s=s.replace(/\.+/g,"-"),s=s.replace(/-{2,}/g,"-"),s.substring(s.length-1)==="-"&&(s=s.substring(0,s.length-1)),s.substring(0,1)==="-"&&(s=s.substring(1)));let r="full",l="fit";return e.fullScreen?l="full":r="fit",(typeof e.sizeName>"u"||typeof e.sizeName!="string"||e.sizeName.length===0)&&(e.sizeName=`${e.width}x${e.height}`),i=i.replace(/{url}/g,t),i=i.replace(/{stub}/g,s),i=i.replace(/{width}/g,e.width),i=i.replace(/{height}/g,e.height),i=i.replace(/{quality}/g,e.quality),i=i.replace(/{full}/g,r),i=i.replace(/{fit}/g,l),i=i.replace(/{size}/g,e.sizeName),i}},v=ie;var ne=D.dirname(oe(import.meta.url)),W=se.readJsonSync(D.resolve(ne,"../package.json")),x=new te;x.version(W.version).description(W.description).option("-b, --base <string>","The base URL value. If set then the URL will be appended to this value.").option("-c, --config <string>","The name of the JSON config file to use to get the screenshots. If this is set all other arguments are ignored.").option("-D, --delay <integer>",`The number of milliseconds to delay after loading before taking a picture of the page. Can not be greater than ${w}.`).option("-d, --dir <string>","The directory relative to where the script is run to output the screenshots to.").option("-f, --fit","Fit the screenshot to the provided height and width.").option("-h, --height <integer>",'Integer height of the viewport to take the screenshot in. Use "--fit" if you want the screenshot to only capture the viewport width and height.',"900").option("--jpg",'Set the image type for screenshots to be "jpg". Alternate method to using --type.').option("-n, --name <string>","The name of the file to save the screenshot as. Only applies to the first URL.").option("--png",'Set the image type for screenshots to be "png". Alternate method to using -t.').option("-q, --quality <integer>","The quality of the jpg image, between 0-100. Not applicable to png image.","100").option("-s, --size <string...>",'A viewport size to capture the screenshot in. The format is WIDTHxHEIGHT. For example, 800x400 for a width of 800px and a height of 400px. Use "--fit" if you want the screenshot to only capture the viewport width and height.',[]).option("-t, --type <string>",'The file type to use for the screenshots. "jpg" or "png"',"jpg").option("-u, --url <string...>","URL to get the screenshot of.",[]).option("-w, --width <integer>","Integer width of the viewport to take the screenshot in.","1300").option("--clipH <integer>","The height of clip area.").option("--clipW <integer>","The width of clip area.").option("--clipX <integer>","The x-coordinate of top-left corner of clip area.").option("--clipY <integer>","The y-coordinate of top-left corner of clip area.").action(e=>{let i=new S;i.setProcessConfigFile(),i.parse(e),i.hasUrls()?v.run(i.getConfig()).then(()=>{p("All screenshots have been taken.")}).catch(t=>{g("Error getting screenshots: ",t)}):g("No URLs were provided to get screenshots of. Nothing to do.")});x.addHelpText("after",`
+
+// src/index.ts
+import { Command } from "commander";
+import fs3 from "fs-extra";
+import path from "path";
+import { fileURLToPath } from "url";
+
+// src/config.ts
+import fs from "fs-extra";
+import { extname } from "path";
+
+// src/lib/log.ts
+import chalk from "chalk";
+import fancyLog from "fancy-log";
+import logSymbols from "log-symbols";
+var logMessage = (message, additionalMessage) => {
+  fancyLog(chalk.cyan(message), additionalMessage ?? "");
+};
+var logSuccess = (message, additionalMessage) => {
+  if (additionalMessage) {
+    fancyLog(
+      logSymbols.success,
+      chalk.green(message),
+      chalk.cyan(additionalMessage)
+    );
+  } else {
+    fancyLog(logSymbols.success, chalk.green(message));
+  }
+};
+var logError = (message, error) => {
+  fancyLog(logSymbols.error, chalk.red(message));
+  if (error) {
+    fancyLog(chalk.red(error.message));
+    fancyLog(chalk.red(error.stack));
+  }
+};
+
+// src/lib/types.ts
+var isFalseLike = (thing) => ["n", "no", false, "false"].includes(thing);
+var isTrueLike = (thing) => ["y", "yes", true, "true"].includes(thing);
+var isBoolLike = (thing) => isTrueLike(thing) || isFalseLike(thing);
+var isDefined = (thing) => typeof thing !== "undefined";
+var isNumber = (thing) => !Number.isNaN(thing) && typeof thing === "number" && thing !== Infinity;
+var isNumberString = (thing) => typeof thing === "string" && thing.trim().length > 0 && !Number.isNaN(Number(thing)) && thing !== "Infinity";
+var isNumberOrNumberString = (thing) => isNumber(thing) || isNumberString(thing);
+var isObject = (thing) => Object.prototype.toString.call(thing) === "[object Object]";
+var isObjectWithValues = (thing) => Object.prototype.toString.call(thing) === "[object Object]" && Object.keys(thing).length > 0;
+var isString = (thing) => typeof thing === "string";
+var isStringWithValue = (thing) => isString(thing) && thing.trim().length > 0;
+
+// src/lib/object.ts
+var objectHasValue = (obj, key) => isObject(obj) && key in obj;
+var objectValueIsNumberOrNumberString = (obj, key) => objectHasValue(obj, key) && isNumberOrNumberString(obj[key]);
+var objectValueIsStringWithValue = (obj, key) => objectHasValue(obj, key) && isStringWithValue(obj[key]);
+
+// src/config.ts
+var defaultConfig = {
+  // The base URL to prepend to each URL if necessary
+  baseUrl: "",
+  // Holds an object which specifies clipping region of the page.
+  clip: false,
+  // The number of milliseconds to delay after loading before taking a picture of the page
+  delay: 0,
+  // The device scale factor to use for the screenshot. Puppeteer default is 1.
+  deviceScaleFactor: 1,
+  // The directory that screenshots are saved in
+  dir: "",
+  // The file name to save the screenshots as.
+  // This is only used if a specific file name is set in the configuration or the CLI arguments
+  // and the name doesn't include {} placeholders.
+  fileName: "",
+  // The file type to save the screenshots as
+  fileType: "jpeg",
+  // Holds whether or not the screenshot should be full page
+  fullScreen: true,
+  // Holds the viewport height to get the screenshot in
+  height: 900,
+  // The format to generate the file name from
+  nameFormat: "{url}-{width}",
+  // The image quality if the screenshot is a jpg
+  quality: 100,
+  // Holds one or more viewport sizes to get the screenshot in
+  sizes: [],
+  // The list of URLs to get screenshots for
+  urls: [],
+  // Holds the viewport width to get the screenshot in
+  width: 1300
+};
+var maxDelay = 3e4;
+var processHeightWidth = (value) => {
+  let returnValue = 0;
+  if (isNumberOrNumberString(value)) {
+    const size = parseInt(value.toString(), 10);
+    if (size > 0) {
+      returnValue = size;
+    }
+  }
+  return returnValue;
+};
+var validateFileType = (type) => {
+  let returnVal = false;
+  if (isStringWithValue(type)) {
+    let fileType = type.toLowerCase().replace(".", "");
+    if (["jpg", "jpeg", "png", "webp"].includes(fileType)) {
+      if (fileType === "jpg") {
+        fileType = "jpeg";
+      }
+      returnVal = fileType;
+    }
+  }
+  return returnVal;
+};
+var ConfigParser = class {
+  /**
+   * Holds the configuration data.
+   *
+   * It defaults to the default configuration.
+   * As each configuration param is processed, this will be updated with the new values.
+   *
+   * @type {Config}
+   */
+  config;
+  /**
+   * Holds the configuration data being worked on.
+   *
+   * @type {ConfigParam}
+   */
+  configParam;
+  /**
+   * Holds whether or not to process the configuration URL if it's included in the config data.
+   *
+   * @type {boolean}
+   */
+  processFile;
+  /**
+   * Holds whether or not to process the configuration sizes if it's included in the config data.
+   *
+   * @type {boolean}
+   */
+  processSizes;
+  /**
+   * Holds whether or not to process the configuration URLs if it's included in the config data.
+   *
+   * @type {boolean}
+   */
+  processUrls;
+  /**
+   * Constructor
+   *
+   * @param {Config|SizeConfig|UrlConfig} baseConfig The default configuration to use instead of the core default configuration
+   */
+  constructor(baseConfig) {
+    this.config = { ...defaultConfig };
+    if (isObjectWithValues(baseConfig)) {
+      const baseConfigObject = { ...baseConfig };
+      if (!Array.isArray(baseConfigObject.sizes)) {
+        baseConfigObject.sizes = [];
+      }
+      if (!Array.isArray(baseConfigObject.urls)) {
+        baseConfigObject.urls = [];
+      }
+      this.config = baseConfigObject;
+    }
+    this.processFile = false;
+    this.processSizes = true;
+    this.processUrls = true;
+  }
+  /**
+   * Set that the configuration file should be processed if it's included in the config data.
+   */
+  setProcessConfigFile() {
+    this.processFile = true;
+  }
+  /**
+   * Set that the configuration sizes should be processed if it's included in the config data.
+   */
+  setDoNotProcessSizes() {
+    this.processSizes = false;
+  }
+  /**
+   * Set that the configuration URLs should be processed if it's included in the config data.
+   */
+  setDoNotProcessUrls() {
+    this.processUrls = false;
+  }
+  /**
+   * Parse the configuration data
+   *
+   * @param {ConfigParam} data The configuration data to parse
+   */
+  parse(data) {
+    if (isObjectWithValues(data)) {
+      if (this.setProcessConfigFile && isStringWithValue(data?.config)) {
+        this.#parseFile(data.config);
+      }
+      this.#parseConfig(data);
+    }
+  }
+  /**
+   * Parse the JSON config file and merge it with the current config
+   *
+   * @param {string} file The name of the JSON config file to parse
+   */
+  #parseFile(file) {
+    try {
+      let configFile = "shots.json";
+      if (typeof file === "string" && file.length > 0) {
+        configFile = file;
+        const ext = extname(file).toLowerCase().replace(".", "");
+        if (ext.length === 0) {
+          configFile += ".json";
+        }
+      }
+      if (fs.existsSync(configFile)) {
+        this.#parseConfig(fs.readJsonSync(configFile));
+      } else {
+        logError(
+          `The JSON config file "${configFile}" could not be found`
+        );
+      }
+    } catch (err) {
+      logError(
+        `Error while processing the JSON config file ${file}`,
+        err
+      );
+      process.exit();
+    }
+  }
+  /**
+   * Parse the configuration data
+   *
+   * @param {ConfigParam} data The configuration data to parse
+   */
+  #parseConfig(data) {
+    this.configParam = data;
+    this.#setBaseUrl();
+    this.#setClip();
+    this.#setDelay();
+    this.#setDeviceScaleFactor();
+    this.#setDir();
+    this.#setFileName();
+    this.#setFileType();
+    this.#setFullScreen();
+    this.#setHeight();
+    this.#setQuality();
+    if (this.processUrls) {
+      this.#setUrls();
+    }
+    if (this.processSizes) {
+      this.#setViewportSizes();
+    }
+    this.#setWidth();
+  }
+  /**
+   * Get the configuration
+   *
+   * @returns {Config} The configuration
+   */
+  getConfig() {
+    return this.config;
+  }
+  /**
+   * Checks if the configuration has URLs
+   *
+   * @returns {boolean}
+   */
+  hasUrls() {
+    return this.config.urls.length > 0;
+  }
+  /**
+   * Set the base URL value
+   *
+   * Remove the trailing slash from the base URL if it exists
+   */
+  #setBaseUrl() {
+    if (isStringWithValue(this.configParam?.base)) {
+      this.config.baseUrl = this.configParam.base.replace(/\/$/, "");
+    } else if (isStringWithValue(this.configParam?.baseUrl)) {
+      this.config.baseUrl = this.configParam.baseUrl.replace(/\/$/, "");
+    }
+  }
+  /**
+   * Set the clip data
+   */
+  #setClip() {
+    if (isObjectWithValues(this.configParam?.clip)) {
+      if (objectValueIsNumberOrNumberString(this.configParam.clip, "x") && objectValueIsNumberOrNumberString(this.configParam.clip, "y") && objectValueIsNumberOrNumberString(this.configParam.clip, "w") && objectValueIsNumberOrNumberString(this.configParam.clip, "h")) {
+        const x = parseInt(this.configParam.clip.x.toString(), 10);
+        const y = parseInt(this.configParam.clip.y.toString(), 10);
+        const w = parseInt(this.configParam.clip.w.toString(), 10);
+        const h = parseInt(this.configParam.clip.h.toString(), 10);
+        if (x >= 0 && y >= 0 && w > 0 && h > 0) {
+          this.config.clip = {
+            x,
+            y,
+            width: w,
+            height: h
+          };
+        }
+      }
+    } else if (isNumberOrNumberString(this.configParam?.clipWidth) && isNumberOrNumberString(this.configParam?.clipHeight)) {
+      const clipX = isNumberOrNumberString(this.configParam?.clipX) ? this.configParam.clipX : 0;
+      const clipY = isNumberOrNumberString(this.configParam?.clipY) ? this.configParam.clipY : 0;
+      const x = parseInt(clipX.toString(), 10);
+      const y = parseInt(clipY.toString(), 10);
+      const w = parseInt(this.configParam.clipWidth.toString(), 10);
+      const h = parseInt(this.configParam.clipHeight.toString(), 10);
+      if (x >= 0 && y >= 0 && w > 0 && h > 0) {
+        this.config.clip = { x, y, width: w, height: h };
+      }
+    }
+  }
+  /**
+   * Set the delay value
+   *
+   */
+  #setDelay() {
+    if (isNumberOrNumberString(this.configParam?.delay)) {
+      let delay = parseInt(this.configParam.delay.toString(), 10);
+      if (delay > 0) {
+        if (delay > maxDelay) {
+          delay = maxDelay;
+        }
+        this.config.delay = delay;
+      }
+    }
+  }
+  /**
+   * Set the directory value
+   *
+   */
+  #setDir() {
+    if (isStringWithValue(this.configParam?.dir)) {
+      this.config.dir = this.configParam.dir.replace(/\/$/, "");
+    }
+  }
+  /**
+   * Sets the file name for the first URL or the name pattern to use for all URLs
+   *
+   */
+  #setFileName() {
+    if (isStringWithValue(this.configParam?.name)) {
+      if (this.configParam.name.includes("{")) {
+        this.config.nameFormat = this.configParam.name;
+      } else {
+        const fileType = validateFileType(
+          extname(this.configParam.name)
+        );
+        this.config.fileName = this.configParam.name;
+        if (fileType) {
+          this.config.fileType = fileType;
+        }
+      }
+    }
+  }
+  /**
+   * Set the file type to save the screenshots as
+   *
+   */
+  #setFileType() {
+    if (isStringWithValue(this.configParam?.type)) {
+      const fileType = validateFileType(this.configParam.type);
+      if (fileType) {
+        this.config.fileType = fileType;
+      }
+    }
+    if (isTrueLike(this.configParam?.jpg)) {
+      this.config.fileType = "jpeg";
+    }
+    if (isTrueLike(this.configParam?.png)) {
+      this.config.fileType = "png";
+    }
+    if (isTrueLike(this.configParam?.webp)) {
+      this.config.fileType = "webp";
+    }
+  }
+  /**
+   * Sets whether or not to get a full page screenshot
+   *
+   */
+  #setFullScreen() {
+    if (isBoolLike(this.configParam?.fit) || isBoolLike(this.configParam?.fullscreen) || isBoolLike(this.configParam?.fullScreen) || isBoolLike(this.configParam?.full)) {
+      let fullScreen = true;
+      if (isBoolLike(this.configParam?.fit)) {
+        fullScreen = this.configParam.fit;
+      } else if (isBoolLike(this.configParam?.fullscreen)) {
+        fullScreen = this.configParam.fullscreen;
+      } else if (isBoolLike(this.configParam?.fullScreen)) {
+        fullScreen = this.configParam.fullScreen;
+      } else if (isBoolLike(this.configParam?.full)) {
+        fullScreen = this.configParam.full;
+      }
+      if (isTrueLike(fullScreen)) {
+        this.config.fullScreen = true;
+      } else {
+        this.config.fullScreen = false;
+      }
+    }
+  }
+  /**
+   * Sets the height of the viewport to take the screenshot in
+   */
+  #setHeight() {
+    const height = processHeightWidth(this.configParam?.height);
+    if (height > 0) {
+      this.config.height = height;
+    }
+  }
+  #setDeviceScaleFactor() {
+    if (isNumberOrNumberString(this.configParam?.pixelRatio)) {
+      const deviceScaleFactor = parseInt(
+        this.configParam.pixelRatio.toString(),
+        10
+      );
+      if (deviceScaleFactor > 0) {
+        this.config.deviceScaleFactor = deviceScaleFactor;
+      }
+    }
+  }
+  /**
+   * Sets the quality to save jpg images as
+   */
+  #setQuality() {
+    if (isNumberOrNumberString(this.configParam?.quality)) {
+      const quality = parseInt(this.configParam.quality.toString(), 10);
+      if (quality > 0 && quality <= 100) {
+        this.config.quality = quality;
+      }
+    }
+  }
+  /**
+   * Sets one or more URLs
+   */
+  #setUrls() {
+    if (Array.isArray(this.configParam?.urls) && this.configParam.urls.length > 0) {
+      for (const url of this.configParam.urls) {
+        this.#configureUrl(url);
+      }
+    } else if (isStringWithValue(this.configParam?.urls)) {
+      this.#configureUrl(this.configParam.urls);
+    } else if (Array.isArray(this.configParam?.url) && this.configParam.url.length > 0) {
+      for (const url of this.configParam.url) {
+        this.#configureUrl(url);
+      }
+    } else if (isStringWithValue(this.configParam?.url)) {
+      this.#configureUrl(this.configParam.url);
+    }
+  }
+  /**
+   * Configures the URL object
+   *
+   * If the URL is a string, it will be converted to an object with the type and URL properties.
+   * If the URL is an object, it will be returned as is.
+   *
+   * If the URL is an object and the name is not set, the file name will be used.
+   * If the URL is an object and the type is not set, the file type will be used.
+   *
+   * @param {UrlParam} url The URL to configure
+   */
+  #configureUrl(url) {
+    if (isObjectWithValues(url) && objectValueIsStringWithValue(url, "url")) {
+      this.config.urls.push(url);
+    } else if (isStringWithValue(url)) {
+      this.config.urls.push({ url });
+    }
+  }
+  /**
+   * Set one or more viewport sizes
+   *
+   * Each size can be set from a string where the width and height are separated by an "x".
+   * 1200x560
+   *
+   * It can be set as an array of sizes
+   * ['1200x560', '600x400']
+   * [{width: 1200, height: 560}, {width: 600, height: 400}]
+   *
+   * It can also be set as an object that contains the width and height values and other configuration values.
+   * {width: 1200, height: 560}
+   */
+  #setViewportSizes() {
+    if (isDefined(this.configParam?.sizes)) {
+      this.#processViewportSizes(this.configParam.sizes);
+    } else if (isDefined(this.configParam?.size)) {
+      this.#processViewportSizes(this.configParam.size);
+    }
+  }
+  /**
+   * Processes the viewport sizes
+   *
+   * @param {SizeParam} sizes The viewport size(s) to process
+   */
+  #processViewportSizes(sizes) {
+    if (isStringWithValue(sizes)) {
+      this.#configureViewportSize(sizes);
+    } else if (Array.isArray(sizes)) {
+      for (const size of sizes) {
+        this.#configureViewportSize(size);
+      }
+    } else if (isObjectWithValues(sizes)) {
+      this.#configureViewportSize(sizes);
+    }
+  }
+  /**
+   * Configures a viewport size
+   *
+   * @param {string|SizeParamObject} size The viewport size to configure
+   */
+  #configureViewportSize(size) {
+    if (isStringWithValue(size)) {
+      const sizes = size.split("x");
+      if (sizes.length === 2) {
+        const width = parseInt(sizes[0], 10);
+        const height = parseInt(sizes[1], 10);
+        if (width > 0 && height > 0) {
+          this.config.sizes.push({
+            height,
+            width
+          });
+        }
+      }
+    } else if (objectValueIsNumberOrNumberString(size, "width") && objectValueIsNumberOrNumberString(size, "height")) {
+      const width = parseInt(size.width.toString(), 10);
+      const height = parseInt(size.height.toString(), 10);
+      if (width > 0 && height > 0) {
+        this.config.sizes.push(size);
+      }
+    }
+  }
+  /**
+   * Sets the width of the viewport to take the screenshot in
+   */
+  #setWidth() {
+    const width = processHeightWidth(this.configParam?.width);
+    if (width > 0) {
+      this.config.width = width;
+    }
+  }
+};
+
+// src/init.ts
+import { createWriteStream } from "fs";
+import { extname as extname2, join } from "path";
+import chalk2 from "chalk";
+import sanitize from "sanitize-filename";
+import ora from "ora";
+var initJson = {
+  /**
+   * The name of the directory to save the file in
+   *
+   * @type {string}
+   */
+  dir: "",
+  /**
+   * The name of the file to save the JSON file as
+   *
+   * @type {string}
+   */
+  filename: "shots.json",
+  /**
+   * Set the name of the directory to save the file in
+   *
+   * @param {string} dir The name of the diectory to save the file in
+   */
+  setDir(dir) {
+    if (typeof dir === "string") {
+      let directory = dir.trim();
+      if (directory.length > 1) {
+        if (directory.substring(directory.length - 1) !== "/") {
+          directory = `${directory}/`;
+        }
+        this.dir = directory;
+      }
+    }
+  },
+  /**
+   * Set the file name for the JSON file
+   *
+   * @param {string} name The filename for the JSON file
+   */
+  setFilename(name) {
+    const ext = extname2(name).toLowerCase().replace(".", "");
+    let filename = name;
+    if (ext !== "json") {
+      filename += ".json";
+    }
+    filename = sanitize(filename, { replacement: "-" });
+    this.filename = filename;
+  },
+  /**
+   * Builds and saves the json file
+   */
+  build() {
+    const json = {
+      baseUrl: "",
+      name: "{url}-{width}",
+      type: "jpg",
+      urls: [],
+      sizes: ["1300x800"]
+    };
+    const filePath = join(this.dir, this.filename), spinner = ora({
+      text: `Creating ${this.filename}`,
+      spinner: "arc"
+    }).start();
+    const writeStream = createWriteStream(filePath, { flags: "w" });
+    writeStream.write(JSON.stringify(json, null, 4));
+    writeStream.close();
+    spinner.succeed(chalk2.green(`${this.filename} created`));
+  }
+};
+var init_default = initJson;
+
+// src/screenshot.ts
+import fs2 from "fs-extra";
+import { dirname, extname as extname3, join as join2 } from "path";
+import { Cluster } from "puppeteer-cluster";
+import sanitize2 from "sanitize-filename";
+
+// src/lib/time.ts
+function getStartTime() {
+  return process.hrtime.bigint();
+}
+function getElapsedTime(startTime) {
+  const endTime = process.hrtime.bigint();
+  const startTimeNumber = Number(startTime);
+  const endTimeNumber = Number(endTime);
+  const elapsedTime = endTimeNumber - startTimeNumber;
+  return (elapsedTime / 1e9).toFixed(4);
+}
+
+// src/screenshot.ts
+var formatFileName = (url, name) => {
+  let urlName = url.url.replace(/http(s?):\/\//, "");
+  urlName = sanitize2(urlName, { replacement: "-" });
+  urlName = urlName.replace(/\.+/g, "-");
+  urlName = urlName.replace(/-{2,}/g, "-");
+  if (urlName.substring(urlName.length - 1) === "-") {
+    urlName = urlName.substring(0, urlName.length - 1);
+  }
+  if (urlName.substring(0, 1) === "-") {
+    urlName = urlName.substring(1);
+  }
+  let stub = url.url.replace(/http(s?):\/\//, "");
+  const stubParts = stub.split("/");
+  stub = stub.replace(stubParts[0], "").trim();
+  if (stub === "/" || stub.length === 0) {
+    stub = "home";
+  } else {
+    if (stub.substring(0, 1) === "/") {
+      stub = stub.substring(1);
+    }
+    stub = sanitize2(stub, { replacement: "-" });
+    stub = stub.replace(/\.+/g, "-");
+    stub = stub.replace(/-{2,}/g, "-");
+    if (stub.substring(stub.length - 1) === "-") {
+      stub = stub.substring(0, stub.length - 1);
+    }
+    if (stub.substring(0, 1) === "-") {
+      stub = stub.substring(1);
+    }
+  }
+  let full = "full", fit = "fit";
+  if (url.fullScreen) {
+    fit = "full";
+  } else {
+    full = "fit";
+  }
+  let returnValue = name.replace(/{url}/g, urlName);
+  returnValue = returnValue.replace(/{stub}/g, stub);
+  returnValue = returnValue.replace(/{width}/g, url.width.toString());
+  returnValue = returnValue.replace(/{height}/g, url.height.toString());
+  returnValue = returnValue.replace(/{quality}/g, url.quality.toString());
+  returnValue = returnValue.replace(/{full}/g, full);
+  returnValue = returnValue.replace(/{fit}/g, fit);
+  returnValue = returnValue.replace(/{size}/g, `${url.width}x${url.height}`);
+  return returnValue;
+};
+var getScreenshot = async (page, url) => {
+  let message = `Viewport size: ${url.width}px / ${url.height}px`;
+  if (url.clip) {
+    message += `, Clip: ${url.clip.x}px / ${url.clip.y}px / ${url.clip.width}px / ${url.clip.height}px`;
+  }
+  if (url.fullScreen) {
+    message += `, Full screen`;
+  }
+  logMessage(`Taking screenshot of ${url.url}`, message);
+  const dir = dirname(url.path);
+  if (dir.length > 0 && !fs2.existsSync(dir)) {
+    fs2.mkdirSync(dir, { recursive: true });
+  }
+  await page.setViewport({
+    deviceScaleFactor: url.deviceScaleFactor,
+    height: url.height,
+    width: url.width
+  });
+  await page.goto(url.url);
+  try {
+    const screenshotConfig = {
+      fullPage: url.fullScreen,
+      path: url.path,
+      type: url.fileType
+    };
+    if (["jpeg", "webp"].includes(url.fileType)) {
+      screenshotConfig.quality = url.quality;
+    }
+    if (url.clip) {
+      screenshotConfig.fullPage = false;
+      screenshotConfig.clip = url.clip;
+    }
+    await page.screenshot(screenshotConfig);
+    logSuccess(`Saved ${url.path}`);
+  } catch (err) {
+    logError("Error while taking the screenshot", err);
+  }
+};
+var getUrlPath = (url) => {
+  let filename = "";
+  if (isStringWithValue(url.fileName)) {
+    filename = url.fileName;
+  } else if (isStringWithValue(url.nameFormat)) {
+    filename = formatFileName(url, url.nameFormat);
+  } else {
+    filename = formatFileName(url, "{url}");
+  }
+  const ext = extname3(filename).toLowerCase().replace(".", "");
+  if (!isStringWithValue(ext) || !["jpg", "jpeg", "png", "webp"].includes(ext)) {
+    filename += `.${url.fileType}`;
+  }
+  return join2(url.dir, filename);
+};
+var setupUrl = (url, config) => {
+  const configParser = new ConfigParser(config);
+  configParser.setDoNotProcessUrls();
+  configParser.setDoNotProcessSizes();
+  configParser.parse(url);
+  const urlConfig = configParser.getConfig();
+  delete urlConfig.urls;
+  const urlData = {
+    ...urlConfig,
+    url: url.url,
+    path: ""
+  };
+  urlData.path = getUrlPath(urlData);
+  if (isStringWithValue(urlData.baseUrl)) {
+    if (urlData.url.substring(0, urlData.baseUrl.length) !== urlData.baseUrl && urlData.url.match(/^http(s?):\/\//) === null) {
+      if (urlData.url.substring(0, 1) !== "/") {
+        urlData.url = `/${urlData.url}`;
+      }
+      urlData.url = urlData.baseUrl + urlData.url;
+    }
+  }
+  return urlData;
+};
+var getScreenshots = async (config) => {
+  try {
+    const startTime = getStartTime();
+    logMessage(
+      `Getting screenshot${config.urls.length === 1 ? "" : "s"} for ${config.urls.length} URL${config.urls.length === 1 ? "" : "s"}.`
+    );
+    const cluster = await Cluster.launch({
+      concurrency: Cluster.CONCURRENCY_CONTEXT,
+      maxConcurrency: 10
+    });
+    await cluster.task(async ({ page, data: url }) => {
+      await getScreenshot(page, url);
+    });
+    for (const url of config.urls) {
+      const urlObject = setupUrl(url, config);
+      if (urlObject.sizes.length > 0) {
+        urlObject.sizes.forEach((size) => {
+          const configParser = new ConfigParser(urlObject);
+          configParser.setDoNotProcessUrls();
+          configParser.setDoNotProcessSizes();
+          configParser.parse(size);
+          const sizeConfig = configParser.getConfig();
+          delete sizeConfig.sizes;
+          delete sizeConfig.urls;
+          const sizeData = {
+            ...sizeConfig,
+            url: urlObject.url,
+            path: ""
+          };
+          sizeData.path = getUrlPath(sizeData);
+          cluster.queue(sizeData);
+        });
+      } else {
+        cluster.queue(urlObject);
+      }
+    }
+    await cluster.idle();
+    await cluster.close();
+    const time = getElapsedTime(startTime);
+    logMessage(`Total time to get screenshots: ${time}s`);
+  } catch (err) {
+    logError(`Error getting screenshots`, err);
+    process.exit(1);
+  }
+};
+var screenshot_default = getScreenshots;
+
+// src/index.ts
+var __dirname = path.dirname(fileURLToPath(import.meta.url));
+var thisPackageJson = fs3.readJsonSync(
+  path.resolve(__dirname, "../package.json")
+);
+var program = new Command();
+program.version(thisPackageJson.version).description(thisPackageJson.description).option(
+  "-b, --base <string>",
+  "The base URL value. If set then the URL will be appended to this value."
+).option("--clipH <integer>", "The height of clip area.").option("--clipW <integer>", "The width of clip area.").option(
+  "--clipX <integer>",
+  "The x-coordinate of top-left corner of clip area."
+).option(
+  "--clipY <integer>",
+  "The y-coordinate of top-left corner of clip area."
+).option(
+  "-c, --config <string>",
+  "The name of the JSON config file to use to get the screenshots. If this is set all other arguments are ignored."
+).option(
+  "-D, --delay <integer>",
+  `The number of milliseconds to delay after loading before taking a picture of the page. Can not be greater than ${maxDelay}.`
+).option(
+  "-d, --dir <string>",
+  "The directory relative to where the script is run to output the screenshots to."
+).option("-f, --fit", "Fit the screenshot to the provided height and width.").option(
+  "-F, --fullScreen <boolean>",
+  "Whether or not to have the screenshot capture the full width and height of the page.",
+  true
+).option(
+  "-h, --height <integer>",
+  'Integer height of the viewport to take the screenshot in. Use "--fit" if you want the screenshot to only capture the viewport width and height.',
+  "900"
+).option(
+  "--jpg",
+  'Set the image type for screenshots to be "jpg". Alternate method to using --type.'
+).option(
+  "-n, --name <string>",
+  "The name of the file to save the screenshot as. Only applies to the first URL."
+).option(
+  "--pixelRatio <number>",
+  "The device pixel ratio to use for the screenshot. Default is 1."
+).option(
+  "--png",
+  'Set the image type for screenshots to be "png". Alternate method to using -t.'
+).option(
+  "-q, --quality <integer>",
+  "The quality of the jpg image, between 0-100. Not applicable to png image.",
+  "100"
+).option(
+  "-s, --size <string...>",
+  'A viewport size to capture the screenshot in. The format is WIDTHxHEIGHT. For example, 800x400 for a width of 800px and a height of 400px. Use "--fit" if you want the screenshot to only capture the viewport width and height.',
+  []
+).option(
+  "-t, --type <string>",
+  'The file type to use for the screenshots. "jpg", "png", or "webp"',
+  "jpg"
+).option("-u, --url <string...>", "URL to get the screenshot of.", []).option(
+  "-w, --width <integer>",
+  "Integer width of the viewport to take the screenshot in.",
+  "1300"
+).option(
+  "--webp",
+  'Set the image type for screenshots to be "webp". Alternate method to using -t.'
+).action((options) => {
+  const configParser = new ConfigParser();
+  configParser.setProcessConfigFile();
+  configParser.parse(options);
+  if (configParser.hasUrls()) {
+    screenshot_default(configParser.getConfig()).then(() => {
+      logSuccess("All screenshots have been taken.");
+    }).catch((err) => {
+      logError("Error getting screenshots: ", err);
+    });
+  } else {
+    logError(
+      "No URLs were provided to get screenshots of. Nothing to do."
+    );
+  }
+});
+program.addHelpText(
+  "after",
+  `
   Examples:
     page-shots -d images -u https://www.mysite.com
     page-shots -u https://www.mysite.com -u https://www.mysite.com/page
@@ -10,4 +890,15 @@ import{Command as te}from"commander";import se from"fs-extra";import D from"path
     page-shots init
     page-shots
     page-shots -c myurls.json
-`);x.command("init [file]").description("Initialize the JSON file that is used to configure the URLs to get screenshots of.").action(e=>{P.setDir(process.cwd()),e&&P.setFilename(e),P.build()});x.parse();
+`
+);
+program.command("init [file]").description(
+  "Initialize the JSON file that is used to configure the URLs to get screenshots of."
+).action((file) => {
+  init_default.setDir(process.cwd());
+  if (file) {
+    init_default.setFilename(file);
+  }
+  init_default.build();
+});
+program.parse();
