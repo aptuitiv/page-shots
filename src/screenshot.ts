@@ -242,13 +242,18 @@ const setupUrl = (url: UrlParamObject, config: Config): UrlData => {
                 urlData.baseUrl &&
             urlData.url.match(/^http(s?):\/\//) === null
         ) {
-            // The base URL does not have a "/" at the end.
-            // Make sure that the URL starts with a "/".
+            // The URL is not a full URL and it does not start with the base URL.
+            // Make sure that the URL starts with a "/" as the base URL does not have a "/" at the end.
             if (urlData.url.substring(0, 1) !== '/') {
                 urlData.url = `/${urlData.url}`;
             }
             urlData.url = urlData.baseUrl + urlData.url;
         }
+    }
+
+    // Make sure that the URL starts with http(s)://
+    if (urlData.url.match(/^http(s?):\/\//) === null) {
+        urlData.url = `https://${urlData.url}`;
     }
 
     // Return the URL data object
