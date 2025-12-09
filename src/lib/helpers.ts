@@ -4,7 +4,7 @@
 
 import { Page } from 'puppeteer';
 
-/* eslint-disable import/prefer-default-export */
+/* eslint-disable import-x/prefer-default-export */
 
 /**
  * Hides the elements on the page that match the given CSS selectors.
