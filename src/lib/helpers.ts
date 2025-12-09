@@ -34,7 +34,7 @@ export const hideElements = async (
             page.evaluate((sel) => {
                 document.querySelectorAll(sel).forEach((element) => {
                     // eslint-disable-next-line no-param-reassign -- Must set display to none to hide the element
-                    (element as HTMLElement).style.display = 'none';
+                    (element as HTMLElement).style.display = 'none !important';
                 });
             }, selector)
         );
