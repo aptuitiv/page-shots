@@ -32,7 +32,7 @@ import {
 } from './types.js';
 import getFullPageScreenshot from './full-page-screenshot.js';
 import { hideElements, getUrlPath, setupUrl } from './lib/helpers.js';
-import { isStringWithValue } from './lib/types.js';
+import { isObjectWithValues, isStringWithValue } from './lib/types.js';
 
 // This is a workaround to get the type for the puppeteer-extra module
 // The default export doesn't have "use" in the type definition. This fixes the type error.
@@ -168,11 +168,21 @@ class Screenshot {
     /**
      * Process the configuration options
      *
-     * @param {ConfigParam} options The configuration options to process. They can come from the command line arguments or a JSON config file.
+     * @param {ConfigParam} options The configuration options to process. They can come from the command line arguments.
+     * @param {ConfigParam} [configFileOptions] The configuration options to process from a JSON config file.
      * @returns {Promise<void>}
      */
-    async processOptions(options: ConfigParam): Promise<void> {
+    async processOptions(
+        options: ConfigParam,
+        configFileOptions?: ConfigParam
+    ): Promise<void> {
         const configParser = new ConfigParser();
+        if (isObjectWithValues(configFileOptions)) {
+            // Parse the configuration options from the JSON config file first.
+            configParser.parse(configFileOptions);
+        }
+        // Parse the configuration options from the command line arguments in case there are any overrides,
+        // or if there were not any configuration options from the JSON config file.
         configParser.parse(options);
 
         if (configParser.hasUrls()) {
@@ -289,7 +299,10 @@ const screenshotHandler = async (options: ConfigParam): Promise<void> => {
                 if (fs.existsSync(configFile)) {
                     logMessage(`Processing config file: ${configFile}`);
                     promises.push(
-                        screenshot.processOptions(fs.readJsonSync(configFile))
+                        screenshot.processOptions(
+                            options,
+                            fs.readJsonSync(configFile)
+                        )
                     );
                 } else {
                     logError(

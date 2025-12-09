@@ -1049,11 +1049,15 @@ var Screenshot = class {
   /**
    * Process the configuration options
    *
-   * @param {ConfigParam} options The configuration options to process. They can come from the command line arguments or a JSON config file.
+   * @param {ConfigParam} options The configuration options to process. They can come from the command line arguments.
+   * @param {ConfigParam} [configFileOptions] The configuration options to process from a JSON config file.
    * @returns {Promise<void>}
    */
-  async processOptions(options) {
+  async processOptions(options, configFileOptions) {
     const configParser = new ConfigParser();
+    if (isObjectWithValues(configFileOptions)) {
+      configParser.parse(configFileOptions);
+    }
     configParser.parse(options);
     if (configParser.hasUrls()) {
       this.getScreenshots(configParser.getConfig());
@@ -1137,7 +1141,10 @@ var screenshotHandler = async (options) => {
         if (fs2.existsSync(configFile)) {
           logMessage(`Processing config file: ${configFile}`);
           promises.push(
-            screenshot.processOptions(fs2.readJsonSync(configFile))
+            screenshot.processOptions(
+              options,
+              fs2.readJsonSync(configFile)
+            )
           );
         } else {
           logError(
