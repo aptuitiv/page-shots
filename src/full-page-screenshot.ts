@@ -164,7 +164,7 @@ const getFullPageScreenshot = async (
     // Chromium's maximum screenshot size is 16,384 pixels. It's based on the maximum texture size supported by Chromium's software GL backend.
     // See https://issues.chromium.org/issues/41347676 for more information.
     // Visit https://webglreport.com/ in Chrome and check the "Max Texture Size" value to see the maximum texture size supported by the browser.
-    const stitchThreshold = 16000;
+    const {stitchThreshold} = url;
 
     try {
         // Handle console logs from the page so that they are printed in the console.

@@ -96,6 +96,8 @@ var defaultConfig = {
   scrollDelay: 400,
   // Holds one or more viewport sizes to get the screenshot in
   sizes: [],
+  // This determines the maximum pixel height of the screenshot that can be taken natively before falling back to stitching screenshots together. It's based on the maximum texture size supported by Chromium's software GL backend. Visit https://webglreport.com/ in Chrome and check the 'Max Texture Size' value to see the maximum texture size supported by the browser.
+  stitchThreshold: 16e3,
   // The list of URLs to get screenshots for
   urls: [],
   // The wait until value to use for the page
@@ -261,6 +263,7 @@ var ConfigParser = class {
     this.#setHeight();
     this.#setQuality();
     this.#setScrollDelay();
+    this.#setStitchThreshold();
     if (this.processUrls) {
       this.#setUrls();
     }
@@ -461,6 +464,17 @@ var ConfigParser = class {
       if (scrollDelay > 0) {
         this.config.scrollDelay = scrollDelay;
       }
+    }
+  }
+  /**
+   * Sets the stitch threshold value
+   */
+  #setStitchThreshold() {
+    const stitchThreshold = processHeightWidth(
+      this.configParam?.stitchThreshold
+    );
+    if (stitchThreshold > 0) {
+      this.config.stitchThreshold = stitchThreshold;
     }
   }
   /**
@@ -759,7 +773,7 @@ var getPageSizeInfo = async (page) => page.evaluate(() => {
 });
 var getFullPageScreenshot = async (page, url, screenshotConfig) => {
   const maxScrollLoops = 50;
-  const stitchThreshold = 16e3;
+  const { stitchThreshold } = url;
   try {
     page.on("console", (consoleObj) => {
       if (consoleObj.type() === "log") {
@@ -1081,6 +1095,10 @@ program.version(thisPackageJson.version).description(thisPackageJson.description
   "--scrollDelay <integer>",
   "The number of milliseconds to delay after each scroll to allow the content to load. This is used to allow time for lazy loading of images or animations that are triggered by the scroll to complete.",
   "400"
+).option(
+  "--stitchThreshold <integer>",
+  "This determines the maximum pixel height of the screenshot that can be taken natively before falling back to stitching screenshots together. It's based on the maximum texture size supported by Chromium's software GL backend. Visit https://webglreport.com/ in Chrome and check the 'Max Texture Size' value to see the maximum texture size supported by the browser.",
+  "16000"
 ).addOption(
   new Option(
     "-t, --type <string>",

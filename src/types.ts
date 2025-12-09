@@ -57,6 +57,8 @@ type BaseConfigParam = {
     // The number of milliseconds to delay after each scroll to allow the content to load.
     // This is used to allow time for lazy loading of images or animations that are triggered by the scroll to complete.
     scrollDelay?: number | string;
+    // This determines the maximum pixel height of the screenshot that can be taken natively before falling back to stitching screenshots together. It's based on the maximum texture size supported by Chromium's software GL backend. Visit https://webglreport.com/ in Chrome and check the 'Max Texture Size' value to see the maximum texture size supported by the browser.
+    stitchThreshold?: number | string;
     // The file type to use for the screenshots
     type?: ImageFormat;
     // The list of URLs to get screenshots for
@@ -126,6 +128,7 @@ type BaseConfig = {
     nameFormat: string;
     quality: number;
     scrollDelay: number;
+    stitchThreshold: number;
     waitUntil: PuppeteerLifeCycleEvent;
     width: number;
 };

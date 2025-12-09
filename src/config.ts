@@ -65,6 +65,8 @@ export const defaultConfig: Config = {
     scrollDelay: 400,
     // Holds one or more viewport sizes to get the screenshot in
     sizes: [],
+    // This determines the maximum pixel height of the screenshot that can be taken natively before falling back to stitching screenshots together. It's based on the maximum texture size supported by Chromium's software GL backend. Visit https://webglreport.com/ in Chrome and check the 'Max Texture Size' value to see the maximum texture size supported by the browser.
+    stitchThreshold: 16000,
     // The list of URLs to get screenshots for
     urls: [],
     // The wait until value to use for the page
@@ -266,6 +268,7 @@ export class ConfigParser {
         this.#setHeight();
         this.#setQuality();
         this.#setScrollDelay();
+        this.#setStitchThreshold();
         if (this.processUrls) {
             this.#setUrls();
         }
@@ -502,6 +505,18 @@ export class ConfigParser {
             if (scrollDelay > 0) {
                 this.config.scrollDelay = scrollDelay;
             }
+        }
+    }
+
+    /**
+     * Sets the stitch threshold value
+     */
+    #setStitchThreshold() {
+        const stitchThreshold = processHeightWidth(
+            this.configParam?.stitchThreshold
+        );
+        if (stitchThreshold > 0) {
+            this.config.stitchThreshold = stitchThreshold;
         }
     }
 
