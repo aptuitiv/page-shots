@@ -32,6 +32,7 @@ import {
     type UrlParamObject,
 } from './types.js';
 import getFullPageScreenshot from './full-page-screenshot.js';
+import { hideElements } from './lib/helpers.js';
 
 // This is a workaround to get the type for the puppeteer-extra module
 // The default export doesn't have "use" in the type definition. This fixes the type error.
@@ -189,6 +190,11 @@ const getScreenshot = async (page: Page, url: UrlData) => {
         // Timeout based on https://github.com/puppeteer/puppeteer/pull/11780#issuecomment-1975869042
         logInfo(`Delaying ${url.url} ${url.delay} milliseconds`);
         await setTimeout(url.delay);
+    }
+
+    // Hide the elements on the page that match the given CSS selectors
+    if (Array.isArray(url.hideSelector)) {
+        await hideElements(page, url.hideSelector);
     }
 
     // Save image screenshot

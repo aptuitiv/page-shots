@@ -266,6 +266,7 @@ export class ConfigParser {
         this.#setFileType();
         this.#setFullScreen();
         this.#setHeight();
+        this.#setHideElement();
         this.#setHideStitchElement();
         this.#setQuality();
         this.#setScrollDelay();
@@ -465,6 +466,23 @@ export class ConfigParser {
         const height = processHeightWidth(this.configParam?.height);
         if (height > 0) {
             this.config.height = height;
+        }
+    }
+
+    /**
+     * Sets the CSS selector of the element to hide during the screenshot process.
+     * The elements are hidden before any screenshot or scrolling is done.
+     */
+    #setHideElement() {
+        if (isStringWithValue(this.configParam?.hideSelector)) {
+            this.config.hideSelector = [this.configParam.hideSelector];
+        } else if (Array.isArray(this.configParam.hideSelector)) {
+            this.config.hideSelector = [];
+            this.configParam.hideSelector.forEach((hideSelector) => {
+                if (isStringWithValue(hideSelector)) {
+                    this.config.hideSelector.push(hideSelector);
+                }
+            });
         }
     }
 

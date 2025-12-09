@@ -65,8 +65,12 @@ program
         '900'
     )
     .option(
+        '--hideSelector <string...>',
+        'The CSS selector of the element(s) to hide during the screenshot process. The elements are hidden before any screenshot or scrolling is done.'
+    )
+    .option(
         '--hideStitchSelector <string...>',
-        'The CSS selector of the element to hide during the screenshot process if screenshots are stitched together. The elements are hidden after the first scroll. Common usage is to hide a sticky header or floating element.'
+        'The CSS selector of the element(s) to hide during the screenshot process if screenshots are stitched together. The elements are hidden after the first scroll. Common usage is to hide a sticky header or floating element.'
     )
     .option(
         '--jpg',

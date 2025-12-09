@@ -112,6 +112,47 @@ In the JSON config file, you can specify the `hideStitchSelector` value as an ar
 }
 ```
 
+## Hiding elements
+
+You can hide elements on the page before taking the screenshot. This is useful for hiding a sticky header or floating element that is present on the page.
+
+The `hideSelector` option is used to hide elements before any screenshot or scrolling is done. It is used when taking a full page screenshot, a fixed size screenshot, or a clipped screenshot.
+
+The `hideStitchSelector` option is only used when doing a full page screenshots and the screenshot is created by stitching together multiple screenshots. It can be used to hide elements on the page after the first scroll. This is useful for hiding a sticky header or floating element that is present on the page.
+
+:::tip
+You should only use the `hideStitchSelector` option to hide floating elements, like a sticky header. Otherwise the resulting screenshot may look off at the bottom as elements are dynamically removed from the page after the original height was set.
+
+Use `hideSelector` to hide elements that are not floating.
+:::
+Examples
+
+(The usage for `hideSelector` is the same as the usage for `hideStitchSelector`.)
+
+```bash
+page-shots --hideSelector '.js-header'
+page-shots --hideSelector '.js-header' '.js-footer'
+page-shots --hideSelector '.js-header' --hideSelector '.js-footer'
+```
+
+```json
+{
+    "hideSelector": ".js-header"
+}
+```
+
+```json
+{
+    "hideSelector": [".js-header"]
+}
+```
+
+```json
+{
+    "hideSelector": [".js-header", ".js-footer"]
+}
+```
+
 ## Setting screenshot size
 
 There are two ways that you can set the size of the screenshot size. (Note, the screenshot size is always in pixels.)

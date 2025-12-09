@@ -261,6 +261,8 @@ var ConfigParser = class {
     this.#setFileType();
     this.#setFullScreen();
     this.#setHeight();
+    this.#setHideElement();
+    this.#setHideStitchElement();
     this.#setQuality();
     this.#setScrollDelay();
     this.#setStitchThreshold();
@@ -428,6 +430,44 @@ var ConfigParser = class {
       this.config.height = height;
     }
   }
+  /**
+   * Sets the CSS selector of the element to hide during the screenshot process.
+   * The elements are hidden before any screenshot or scrolling is done.
+   */
+  #setHideElement() {
+    if (isStringWithValue(this.configParam?.hideSelector)) {
+      this.config.hideSelector = [this.configParam.hideSelector];
+    } else if (Array.isArray(this.configParam.hideSelector)) {
+      this.config.hideSelector = [];
+      this.configParam.hideSelector.forEach((hideSelector) => {
+        if (isStringWithValue(hideSelector)) {
+          this.config.hideSelector.push(hideSelector);
+        }
+      });
+    }
+  }
+  /**
+   * Sets the CSS selector of the element to hide during the screenshot process if screenshots are stitched together. The elements are hidden after the first scroll. Common usage is to hide a sticky header or floating element.
+   */
+  #setHideStitchElement() {
+    if (isStringWithValue(this.configParam?.hideStitchSelector)) {
+      this.config.hideStitchSelector = [
+        this.configParam.hideStitchSelector
+      ];
+    } else if (Array.isArray(this.configParam.hideStitchSelector)) {
+      this.config.hideStitchSelector = [];
+      this.configParam.hideStitchSelector.forEach(
+        (hideStitchSelector) => {
+          if (isStringWithValue(hideStitchSelector)) {
+            this.config.hideStitchSelector.push(hideStitchSelector);
+          }
+        }
+      );
+    }
+  }
+  /**
+   * Sets the device scale factor to use for the screenshot.
+   */
   #setDeviceScaleFactor() {
     if (isNumberOrNumberString(this.configParam?.pixelRatio)) {
       const deviceScaleFactor = parseInt(
@@ -705,6 +745,23 @@ function getElapsedTime(startTime) {
 import fs2 from "fs-extra";
 import sharp from "sharp";
 import { setTimeout } from "timers/promises";
+
+// src/lib/helpers.ts
+var hideElements = async (page, selectors) => {
+  const promises = [];
+  selectors.forEach((selector) => {
+    promises.push(
+      page.evaluate((sel) => {
+        document.querySelectorAll(sel).forEach((element) => {
+          element.style.display = "none";
+        });
+      }, selector)
+    );
+  });
+  await Promise.all(promises);
+};
+
+// src/full-page-screenshot.ts
 var stitchImages = async (scrBuffers, width, extraHeight) => {
   const numBuffers = scrBuffers.length;
   const sharpImages = await Promise.all(
@@ -811,6 +868,9 @@ var getFullPageScreenshot = async (page, url, screenshotConfig) => {
       delete screenshotConf.fullPage;
       const sectionScreenshots = [];
       for (let index = 0; index < pageSizeInfo.pages; index += 1) {
+        if (index > 0 && Array.isArray(url.hideStitchSelector)) {
+          await hideElements(page, url.hideStitchSelector);
+        }
         await setTimeout(100);
         const screenshot = await page.screenshot(screenshotConf);
         sectionScreenshots.push(screenshot);
@@ -924,6 +984,9 @@ var getScreenshot = async (page, url) => {
   if (url.delay > 0) {
     logInfo(`Delaying ${url.url} ${url.delay} milliseconds`);
     await setTimeout2(url.delay);
+  }
+  if (Array.isArray(url.hideSelector)) {
+    await hideElements(page, url.hideSelector);
   }
   try {
     const screenshotConfig = {
@@ -1071,6 +1134,12 @@ program.version(thisPackageJson.version).description(thisPackageJson.description
   "-h, --height <integer>",
   'Integer height of the viewport to take the screenshot in. Use "--fit" if you want the screenshot to only capture the viewport width and height.',
   "900"
+).option(
+  "--hideSelector <string...>",
+  "The CSS selector of the element(s) to hide during the screenshot process. The elements are hidden before any screenshot or scrolling is done."
+).option(
+  "--hideStitchSelector <string...>",
+  "The CSS selector of the element(s) to hide during the screenshot process if screenshots are stitched together. The elements are hidden after the first scroll. Common usage is to hide a sticky header or floating element."
 ).option(
   "--jpg",
   'Set the image type for screenshots to be "jpg". Alternate method to using --type.'
