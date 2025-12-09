@@ -88,7 +88,7 @@ const stitchImages = async (
         .composite(composites)
         .png()
         .toBuffer();
-}
+};
 
 /**
  * Get the page height
