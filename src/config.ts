@@ -2,12 +2,10 @@
     Configuration for the page-shots package
 =========================================================================== */
 
-import fs from 'fs-extra';
 import { extname } from 'path';
 import { type ImageFormat, type PuppeteerLifeCycleEvent } from 'puppeteer';
 
 // Library
-import { logError } from './lib/log.js';
 import {
     objectValueIsNumberOrNumberString,
     objectValueIsStringWithValue,
@@ -161,10 +159,12 @@ export class ConfigParser {
      * @param {Config|SizeConfig|UrlConfig} baseConfig The default configuration to use instead of the core default configuration
      */
     constructor(baseConfig?: Config | SizeConfig | UrlConfig) {
-        this.config = { ...defaultConfig };
+        // Clone the default configuration to ensure that the configuration is not modified by reference.
+        // https://nodejs.org/api/globals.html#structuredclonevalue-options
+        this.config = structuredClone(defaultConfig);
         if (isObjectWithValues(baseConfig)) {
             // A base configuration object was passed in. Use it to set the configuration.
-            const baseConfigObject = { ...(baseConfig as Config) };
+            const baseConfigObject = structuredClone(baseConfig as Config);
             // For consistency, make sure that the sizes and urls values are always arrays.
             if (!Array.isArray(baseConfigObject.sizes)) {
                 baseConfigObject.sizes = [];
@@ -208,77 +208,31 @@ export class ConfigParser {
      */
     parse(data: ConfigParam) {
         if (isObjectWithValues(data)) {
-            // If the configuration file is set in the configuration data
-            // and the processConfigFile flag is set, parse the configuration file first.
-            // if (this.setProcessConfigFile && isStringWithValue(data?.config)) {
-            //     this.#parseFile(data.config);
-            // }
-
             // Parse the configuration data
-            this.#parseConfig(data);
-        }
-    }
-
-    /**
-     * Parse the JSON config file and merge it with the current config
-     *
-     * @param {string} file The name of the JSON config file to parse
-     */
-    #parseFile(file: string) {
-        try {
-            let configFile = 'shots.json';
-            if (typeof file === 'string' && file.length > 0) {
-                configFile = file;
-                const ext = extname(file).toLowerCase().replace('.', '');
-                if (ext.length === 0) {
-                    configFile += '.json';
-                }
+            this.configParam = data;
+            this.#setBaseUrl();
+            this.#setClip();
+            this.#setDelay();
+            this.#setDeviceScaleFactor();
+            this.#setDir();
+            this.#setFileName();
+            this.#setFileType();
+            this.#setFullScreen();
+            this.#setHeight();
+            this.#setHideElement();
+            this.#setHideStitchElement();
+            this.#setQuality();
+            this.#setScrollDelay();
+            this.#setStitchThreshold();
+            if (this.processUrls) {
+                this.#setUrls();
             }
-            if (fs.existsSync(configFile)) {
-                this.#parseConfig(fs.readJsonSync(configFile));
-            } else {
-                logError(
-                    `The JSON config file "${configFile}" could not be found`
-                );
+            if (this.processSizes) {
+                this.#setViewportSizes();
             }
-        } catch (err) {
-            logError(
-                `Error while processing the JSON config file ${file}`,
-                err
-            );
-            process.exit();
+            this.#setWaitUntil();
+            this.#setWidth();
         }
-    }
-
-    /**
-     * Parse the configuration data
-     *
-     * @param {ConfigParam} data The configuration data to parse
-     */
-    #parseConfig(data: ConfigParam) {
-        this.configParam = data;
-        this.#setBaseUrl();
-        this.#setClip();
-        this.#setDelay();
-        this.#setDeviceScaleFactor();
-        this.#setDir();
-        this.#setFileName();
-        this.#setFileType();
-        this.#setFullScreen();
-        this.#setHeight();
-        this.#setHideElement();
-        this.#setHideStitchElement();
-        this.#setQuality();
-        this.#setScrollDelay();
-        this.#setStitchThreshold();
-        if (this.processUrls) {
-            this.#setUrls();
-        }
-        if (this.processSizes) {
-            this.#setViewportSizes();
-        }
-        this.#setWaitUntil();
-        this.#setWidth();
     }
 
     /**
