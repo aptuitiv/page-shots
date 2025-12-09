@@ -77,24 +77,24 @@ const formatFileName = (url: UrlData | SizeData, name: string): string => {
         urlName = urlName.substring(1);
     }
 
-    // Get the URL stub
-    let stub = url.url.replace(/http(s?):\/\//, '');
-    const stubParts = stub.split('/');
-    stub = stub.replace(stubParts[0], '').trim();
-    if (stub === '/' || stub.length === 0) {
-        stub = 'home';
+    // Get the URL path/stub
+    let path = url.url.replace(/http(s?):\/\//, '');
+    const pathParts = path.split('/');
+    path = path.replace(pathParts[0], '').trim();
+    if (path === '/' || path.length === 0) {
+        path = 'home';
     } else {
-        if (stub.substring(0, 1) === '/') {
-            stub = stub.substring(1);
+        if (path.substring(0, 1) === '/') {
+            path = path.substring(1);
         }
-        stub = sanitize(stub, { replacement: '-' });
-        stub = stub.replace(/\.+/g, '-');
-        stub = stub.replace(/-{2,}/g, '-');
-        if (stub.substring(stub.length - 1) === '-') {
-            stub = stub.substring(0, stub.length - 1);
+        path = sanitize(path, { replacement: '-' });
+        path = path.replace(/\.+/g, '-');
+        path = path.replace(/-{2,}/g, '-');
+        if (path.substring(path.length - 1) === '-') {
+            path = path.substring(0, path.length - 1);
         }
-        if (stub.substring(0, 1) === '-') {
-            stub = stub.substring(1);
+        if (path.substring(0, 1) === '-') {
+            path = path.substring(1);
         }
     }
 
@@ -109,7 +109,7 @@ const formatFileName = (url: UrlData | SizeData, name: string): string => {
 
     // Format the name
     let returnValue = name.replace(/{url}/g, urlName);
-    returnValue = returnValue.replace(/{stub}/g, stub);
+    returnValue = returnValue.replace(/{(path|stub)}/g, path);
     returnValue = returnValue.replace(/{width}/g, url.width.toString());
     returnValue = returnValue.replace(/{height}/g, url.height.toString());
     returnValue = returnValue.replace(/{quality}/g, url.quality.toString());
