@@ -155,6 +155,7 @@ const getScreenshot = async (page: Page, url: UrlData) => {
     // Go to the URL
     // See https://screenshotone.com/blog/puppeteer-wait-until-the-page-is-ready/ for more information about waiting until the page is ready.
     const goToOptions: GoToOptions = {
+        timeout: 60000,
         waitUntil: url.waitUntil,
     };
     await page.goto(url.url, goToOptions);
