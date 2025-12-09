@@ -30,6 +30,7 @@ import {
     type UrlParamObject,
     ConfigParser,
 } from './config.js';
+import getFullPageScreenshot from './full-page-screenshot.js';
 
 // This is a workaround to get the type for the puppeteer-extra module
 // The default export doesn't have "use" in the type definition. This fixes the type error.
@@ -182,12 +183,17 @@ const getScreenshot = async (page: Page, url: UrlData) => {
             screenshotConfig.clip = url.clip;
         }
 
-        // Take the screenshot
-        await page.screenshot(screenshotConfig);
+        if (screenshotConfig.fullPage) {
+            await getFullPageScreenshot(page, screenshotConfig);
+        } else {
+            await page.screenshot(screenshotConfig);
+        }
         logSuccess(`Saved ${url.path}`);
     } catch (err) {
         logError('Error while taking the screenshot', err);
+        return null;
     }
+    return null;
 };
 
 /**

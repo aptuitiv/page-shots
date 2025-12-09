@@ -2,7 +2,7 @@
 
 // src/index.ts
 import { Command, Option } from "commander";
-import fs3 from "fs-extra";
+import fs4 from "fs-extra";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -645,14 +645,14 @@ var initJson = {
 var init_default = initJson;
 
 // src/screenshot.ts
-import fs2 from "fs-extra";
+import fs3 from "fs-extra";
 import { dirname, extname as extname3, join as join2 } from "path";
 import { Cluster } from "puppeteer-cluster";
 import sanitize2 from "sanitize-filename";
 import puppeteerExtraModule from "puppeteer-extra";
 import AdblockerPluginModule from "puppeteer-extra-plugin-adblocker";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
-import { setTimeout } from "timers/promises";
+import { setTimeout as setTimeout2 } from "timers/promises";
 
 // src/lib/time.ts
 function getStartTime() {
@@ -665,6 +665,134 @@ function getElapsedTime(startTime) {
   const elapsedTime = endTimeNumber - startTimeNumber;
   return (elapsedTime / 1e9).toFixed(4);
 }
+
+// src/full-page-screenshot.ts
+import fs2 from "fs-extra";
+import sharp from "sharp";
+import { setTimeout } from "timers/promises";
+async function stitchImages(scrBuffers, width, extraHeight) {
+  const numBuffers = scrBuffers.length;
+  const sharpImages = await Promise.all(
+    scrBuffers.map((buf, index) => {
+      const img = sharp(buf).ensureAlpha().raw();
+      if (index === numBuffers - 1 && extraHeight > 0) {
+        img.resize({
+          height: extraHeight,
+          width,
+          position: "bottom"
+        });
+      }
+      return img.toBuffer({ resolveWithObject: true });
+    })
+  );
+  const totalHeight = sharpImages.reduce(
+    (sum, img) => sum + img.info.height,
+    0
+  );
+  const composites = [];
+  let offset = 0;
+  for (const img of sharpImages) {
+    composites.push({
+      input: img.data,
+      top: offset,
+      left: 0,
+      raw: {
+        width: img.info.width,
+        height: img.info.height,
+        channels: img.info.channels
+      }
+    });
+    offset += img.info.height;
+  }
+  return await sharp({
+    create: {
+      width,
+      height: totalHeight,
+      channels: 4,
+      background: { r: 255, g: 255, b: 255, alpha: 0 }
+    }
+  }).composite(composites).png().toBuffer();
+}
+var getPageHeight = async (page) => await page.evaluate(() => document.documentElement.scrollHeight);
+async function scrollDown(page) {
+  await page.evaluate(() => {
+    window.scrollBy({
+      left: 0,
+      top: window.innerHeight,
+      behavior: "instant"
+    });
+  });
+}
+var getPageSizeInfo = async (page) => await page.evaluate(() => {
+  window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  const pageHeight = document.documentElement.scrollHeight;
+  return {
+    pages: Math.ceil(pageHeight / window.innerHeight),
+    extraHeight: pageHeight % window.innerHeight * window.devicePixelRatio,
+    pageHeight,
+    viewport: {
+      height: window.innerHeight * window.devicePixelRatio,
+      width: window.innerWidth * window.devicePixelRatio
+    }
+  };
+});
+var getFullPageScreenshot = async (page, screenshotConfig) => {
+  const maxScrollLoops = 50;
+  const stitchThreshold = 16e3;
+  try {
+    page.on("console", (consoleObj) => {
+      if (consoleObj.type() === "log") {
+        logMessage(consoleObj.text());
+      }
+    });
+    let pageSizeInfo = await getPageSizeInfo(page);
+    let lastHeight = pageSizeInfo.viewport.height;
+    let sameHeightCount = 0;
+    for (let index = 0; index < maxScrollLoops; index += 1) {
+      await scrollDown(page);
+      await setTimeout(400);
+      const newHeight = await getPageHeight(page);
+      if (newHeight === lastHeight) {
+        sameHeightCount++;
+      } else {
+        sameHeightCount = 0;
+      }
+      if (sameHeightCount >= 3) break;
+      lastHeight = newHeight;
+    }
+    pageSizeInfo = await getPageSizeInfo(page);
+    await page.evaluate(
+      () => window.scrollTo({ top: 0, left: 0, behavior: "instant" })
+    );
+    await setTimeout(100);
+    const fullHeight = await getPageHeight(page);
+    if (fullHeight <= stitchThreshold) {
+      await page.screenshot(screenshotConfig);
+    } else {
+      screenshotConfig.captureBeyondViewport = false;
+      const { path: path2 } = screenshotConfig;
+      delete screenshotConfig.path;
+      delete screenshotConfig.fullPage;
+      const sectionScreenshots = [];
+      for (let index = 0; index < pageSizeInfo.pages; index += 1) {
+        await setTimeout(100);
+        const screenshot = await page.screenshot(screenshotConfig);
+        sectionScreenshots.push(screenshot);
+        await scrollDown(page);
+      }
+      const stitchedScreenshot = await stitchImages(
+        sectionScreenshots,
+        pageSizeInfo.viewport.width,
+        pageSizeInfo.extraHeight
+      );
+      fs2.writeFileSync(path2, stitchedScreenshot);
+    }
+  } catch (err) {
+    logError("Error while taking the full page screenshot", err);
+  }
+  return null;
+};
+var full_page_screenshot_default = getFullPageScreenshot;
 
 // src/screenshot.ts
 var puppeteerExtra = puppeteerExtraModule;
@@ -680,23 +808,23 @@ var formatFileName = (url, name) => {
   if (urlName.substring(0, 1) === "-") {
     urlName = urlName.substring(1);
   }
-  let stub = url.url.replace(/http(s?):\/\//, "");
-  const stubParts = stub.split("/");
-  stub = stub.replace(stubParts[0], "").trim();
-  if (stub === "/" || stub.length === 0) {
-    stub = "home";
+  let path2 = url.url.replace(/http(s?):\/\//, "");
+  const pathParts = path2.split("/");
+  path2 = path2.replace(pathParts[0], "").trim();
+  if (path2 === "/" || path2.length === 0) {
+    path2 = "home";
   } else {
-    if (stub.substring(0, 1) === "/") {
-      stub = stub.substring(1);
+    if (path2.substring(0, 1) === "/") {
+      path2 = path2.substring(1);
     }
-    stub = sanitize2(stub, { replacement: "-" });
-    stub = stub.replace(/\.+/g, "-");
-    stub = stub.replace(/-{2,}/g, "-");
-    if (stub.substring(stub.length - 1) === "-") {
-      stub = stub.substring(0, stub.length - 1);
+    path2 = sanitize2(path2, { replacement: "-" });
+    path2 = path2.replace(/\.+/g, "-");
+    path2 = path2.replace(/-{2,}/g, "-");
+    if (path2.substring(path2.length - 1) === "-") {
+      path2 = path2.substring(0, path2.length - 1);
     }
-    if (stub.substring(0, 1) === "-") {
-      stub = stub.substring(1);
+    if (path2.substring(0, 1) === "-") {
+      path2 = path2.substring(1);
     }
   }
   let full = "full", fit = "fit";
@@ -706,7 +834,7 @@ var formatFileName = (url, name) => {
     full = "fit";
   }
   let returnValue = name.replace(/{url}/g, urlName);
-  returnValue = returnValue.replace(/{stub}/g, stub);
+  returnValue = returnValue.replace(/{(path|stub)}/g, path2);
   returnValue = returnValue.replace(/{width}/g, url.width.toString());
   returnValue = returnValue.replace(/{height}/g, url.height.toString());
   returnValue = returnValue.replace(/{quality}/g, url.quality.toString());
@@ -725,8 +853,8 @@ var getScreenshot = async (page, url) => {
   }
   logMessage(`Taking screenshot of ${url.url}`, message);
   const dir = dirname(url.path);
-  if (dir.length > 0 && !fs2.existsSync(dir)) {
-    fs2.mkdirSync(dir, { recursive: true });
+  if (dir.length > 0 && !fs3.existsSync(dir)) {
+    fs3.mkdirSync(dir, { recursive: true });
   }
   await page.setViewport({
     deviceScaleFactor: url.deviceScaleFactor,
@@ -734,12 +862,13 @@ var getScreenshot = async (page, url) => {
     width: url.width
   });
   const goToOptions = {
+    timeout: 6e4,
     waitUntil: url.waitUntil
   };
   await page.goto(url.url, goToOptions);
   if (url.delay > 0) {
     logInfo(`Delaying ${url.url} ${url.delay} milliseconds`);
-    await setTimeout(url.delay);
+    await setTimeout2(url.delay);
   }
   try {
     const screenshotConfig = {
@@ -754,11 +883,17 @@ var getScreenshot = async (page, url) => {
       screenshotConfig.fullPage = false;
       screenshotConfig.clip = url.clip;
     }
-    await page.screenshot(screenshotConfig);
+    if (screenshotConfig.fullPage) {
+      await full_page_screenshot_default(page, screenshotConfig);
+    } else {
+      await page.screenshot(screenshotConfig);
+    }
     logSuccess(`Saved ${url.path}`);
   } catch (err) {
     logError("Error while taking the screenshot", err);
+    return null;
   }
+  return null;
 };
 var getUrlPath = (url) => {
   let filename = "";
@@ -853,7 +988,7 @@ var screenshot_default = getScreenshots;
 
 // src/index.ts
 var __dirname = path.dirname(fileURLToPath(import.meta.url));
-var thisPackageJson = fs3.readJsonSync(
+var thisPackageJson = fs4.readJsonSync(
   path.resolve(__dirname, "../package.json")
 );
 var program = new Command();
