@@ -77,7 +77,7 @@ const stitchImages = async (
     }
 
     // Stitch into final image
-    return await sharp({
+    return sharp({
         create: {
             width,
             height: totalHeight,
@@ -97,7 +97,7 @@ const stitchImages = async (
  * @returns {Promise<number>} The page height
  */
 const getPageHeight = async (page: Page): Promise<number> =>
-    await page.evaluate(() => document.documentElement.scrollHeight);
+    page.evaluate(() => document.documentElement.scrollHeight);
 
 /**
  * Scrolls the page down by the height of the viewport.
@@ -122,7 +122,7 @@ async function scrollDown(page: Page) {
  * @returns {Promise<PageSizeInfo>} The page size info
  */
 const getPageSizeInfo = async (page: Page): Promise<PageSizeInfo> =>
-    await page.evaluate(() => {
+    page.evaluate(() => {
         window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
         const pageHeight = document.documentElement.scrollHeight;
         return {
