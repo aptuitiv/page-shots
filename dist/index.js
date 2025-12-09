@@ -818,6 +818,8 @@ var formatFileName = (url, name) => {
   let urlName = `${urlObject.hostname}${urlObject.pathname}`;
   urlName = cleanUrlPath(urlName);
   const urlNoWww = urlName.replace(/^www-/, "").replace(/^www\./, "");
+  const hostName = cleanUrlPath(urlObject.hostname);
+  const hostNameNoWww = hostName.replace(/^www-/, "").replace(/^www\./, "");
   let path2 = urlObject.pathname;
   if (path2 === "/" || path2.length === 0) {
     path2 = "home";
@@ -835,6 +837,8 @@ var formatFileName = (url, name) => {
   }
   let returnValue = name.replace(/{url}/g, urlName);
   returnValue = returnValue.replace(/{urlNoWww}/g, urlNoWww);
+  returnValue = returnValue.replace(/{hostname}/g, hostName);
+  returnValue = returnValue.replace(/{hostnameNoWww}/g, hostNameNoWww);
   returnValue = returnValue.replace(/{(path|stub)}/g, path2);
   returnValue = returnValue.replace(/{width}/g, url.width.toString());
   returnValue = returnValue.replace(/{height}/g, url.height.toString());
