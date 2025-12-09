@@ -181,12 +181,16 @@ const getFullPageScreenshot = async (
         // Do the scroll loop to trigger lazy loading of images
         // and to get the final page size info.
         // This handles infinite scroll pages.
+
         for (let index = 0; index < maxScrollLoops; index += 1) {
+            // eslint-disable-next-line no-await-in-loop -- Must scroll sequentially to trigger lazy loading
             await scrollDown(page);
+            // eslint-disable-next-line no-await-in-loop -- Delay after scroll to allow content to load
             await setTimeout(400);
 
             // Get the new page height and compare it to the last height.
             // If the height stabilizes for several loops, stop scrolling.
+            // eslint-disable-next-line no-await-in-loop -- Must check height after each scroll position
             const newHeight = await getPageHeight(page);
             if (newHeight === lastHeight) {
                 sameHeightCount++;
@@ -225,6 +229,7 @@ const getFullPageScreenshot = async (
             delete screenshotConf.fullPage;
 
             const sectionScreenshots = [];
+
             for (let index = 0; index < pageSizeInfo.pages; index += 1) {
                 // if (index > 0) {
                 //     await page.evaluate(() => {
@@ -236,13 +241,16 @@ const getFullPageScreenshot = async (
                 // }
 
                 // Pause slightly before taking the screenshot to allow the page to settle.
+                // eslint-disable-next-line no-await-in-loop -- Delay needed before each screenshot
                 await setTimeout(100);
                 // await page.waitForNetworkIdle({ idleTime: 200 }).catch(() => {});
                 // await waitForImages(page);
 
+                // eslint-disable-next-line no-await-in-loop -- Screenshot must be taken at current scroll position
                 const screenshot = await page.screenshot(screenshotConf);
                 sectionScreenshots.push(screenshot);
 
+                // eslint-disable-next-line no-await-in-loop -- Must scroll sequentially to next position
                 await scrollDown(page);
             }
 
