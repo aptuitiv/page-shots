@@ -23,15 +23,16 @@ type PageSizeInfo = {
 /**
  * Stitches multiple image buffers vertically into one image.
  *
- * @param scrBuffers
- * @param width
- * @param extraHeight
+ * @param {Buffer[]} scrBuffers The array of image buffers to stitch together
+ * @param {number} width The width of the final image
+ * @param {number} extraHeight The extra height of the last image
+ * @returns {Promise<Buffer>} The stitched image buffer
  */
-async function stitchImages(
+const stitchImages = async (
     scrBuffers: Buffer[],
     width: number,
     extraHeight: number
-) {
+): Promise<Buffer> => {
     const numBuffers = scrBuffers.length;
     // Convert all slices to Sharp objects & metadata
     const sharpImages = await Promise.all(
