@@ -146,7 +146,7 @@ class Screenshot {
     /**
      * Initialize the screenshot class
      *
-     * @param options
+     * @param {ConfigParam} options The configuration options to initialize the screenshot class with.
      * @returns {Promise<void>}
      */
     async init(options: ConfigParam): Promise<void> {
