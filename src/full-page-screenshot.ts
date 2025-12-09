@@ -161,7 +161,9 @@ const getFullPageScreenshot = async (
     // The pixel threshold at which we will stitch the screenshots together.
     // If the page height is less than this threshold, we will take a single screenshot using the fullPage option.
     // If the page height is greater than this threshold, we will stitch the screenshots together using the stitchedImages function.
-    // Chromium's maximum screenshot size is 16,384 pixels. https://issues.chromium.org/issues/41347676
+    // Chromium's maximum screenshot size is 16,384 pixels. It's based on the maximum texture size supported by Chromium's software GL backend.
+    // See https://issues.chromium.org/issues/41347676 for more information.
+    // Visit https://webglreport.com/ in Chrome and check the "Max Texture Size" value to see the maximum texture size supported by the browser.
     const stitchThreshold = 16000;
 
     try {
