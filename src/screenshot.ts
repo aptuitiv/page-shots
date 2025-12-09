@@ -78,6 +78,9 @@ const formatFileName = (url: UrlData | SizeData, name: string): string => {
         urlName = urlName.substring(1);
     }
 
+    // Get the URL without the "www." prefix
+    const urlNoWww = urlName.replace(/^www-/, '');
+
     // Get the URL path/stub
     let path = url.url.replace(/http(s?):\/\//, '');
     const pathParts = path.split('/');
@@ -110,6 +113,7 @@ const formatFileName = (url: UrlData | SizeData, name: string): string => {
 
     // Format the name
     let returnValue = name.replace(/{url}/g, urlName);
+    returnValue = returnValue.replace(/{urlNoWww}/g, urlNoWww);
     returnValue = returnValue.replace(/{(path|stub)}/g, path);
     returnValue = returnValue.replace(/{width}/g, url.width.toString());
     returnValue = returnValue.replace(/{height}/g, url.height.toString());

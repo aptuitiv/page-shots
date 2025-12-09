@@ -808,6 +808,7 @@ var formatFileName = (url, name) => {
   if (urlName.substring(0, 1) === "-") {
     urlName = urlName.substring(1);
   }
+  const urlNoWww = urlName.replace(/^www-/, "");
   let path2 = url.url.replace(/http(s?):\/\//, "");
   const pathParts = path2.split("/");
   path2 = path2.replace(pathParts[0], "").trim();
@@ -834,6 +835,7 @@ var formatFileName = (url, name) => {
     full = "fit";
   }
   let returnValue = name.replace(/{url}/g, urlName);
+  returnValue = returnValue.replace(/{urlNoWww}/g, urlNoWww);
   returnValue = returnValue.replace(/{(path|stub)}/g, path2);
   returnValue = returnValue.replace(/{width}/g, url.width.toString());
   returnValue = returnValue.replace(/{height}/g, url.height.toString());
