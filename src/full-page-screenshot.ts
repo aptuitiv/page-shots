@@ -218,10 +218,11 @@ const getFullPageScreenshot = async (
             // The page is tall enough that we need to stitch it together from multiple screenshots.
             // Set up the screenshot configuration. It should not have the path or fullPage options
             // since we will be taking multiple screenshots and stitching them together.
-            screenshotConfig.captureBeyondViewport = false;
-            const { path } = screenshotConfig;
-            delete screenshotConfig.path;
-            delete screenshotConfig.fullPage;
+            const screenshotConf = { ...screenshotConfig };
+            screenshotConf.captureBeyondViewport = false;
+            const { path } = screenshotConf;
+            delete screenshotConf.path;
+            delete screenshotConf.fullPage;
 
             const sectionScreenshots = [];
             for (let index = 0; index < pageSizeInfo.pages; index += 1) {
@@ -239,7 +240,7 @@ const getFullPageScreenshot = async (
                 // await page.waitForNetworkIdle({ idleTime: 200 }).catch(() => {});
                 // await waitForImages(page);
 
-                const screenshot = await page.screenshot(screenshotConfig);
+                const screenshot = await page.screenshot(screenshotConf);
                 sectionScreenshots.push(screenshot);
 
                 await scrollDown(page);
