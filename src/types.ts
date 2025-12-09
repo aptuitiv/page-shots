@@ -19,6 +19,9 @@ type BaseConfigParam = {
     // The base URL to prepend to each URL if necessary
     base?: string; // CLI argument
     baseUrl?: string; // JSON config
+    // Whether or not to block ads and cookie notices.
+    // Because this has to be checked before the options are parsed, it can only be set on the command line.
+    blockAdsAndCookieNotices?: BoolLike;
     // Holds an object which specifies clipping region of the page.
     clip?: ClipParam; // JSON config
     // The x coordinate of the clipping region

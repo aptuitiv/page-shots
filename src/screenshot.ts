@@ -32,7 +32,11 @@ import {
 } from './types.js';
 import getFullPageScreenshot from './full-page-screenshot.js';
 import { hideElements, getUrlPath, setupUrl } from './lib/helpers.js';
-import { isObjectWithValues, isStringWithValue } from './lib/types.js';
+import {
+    isObjectWithValues,
+    isStringWithValue,
+    isTrueLike,
+} from './lib/types.js';
 
 // This is a workaround to get the type for the puppeteer-extra module
 // The default export doesn't have "use" in the type definition. This fixes the type error.
@@ -142,13 +146,22 @@ class Screenshot {
     /**
      * Initialize the screenshot class
      *
+     * @param options
      * @returns {Promise<void>}
      */
-    async init(): Promise<void> {
+    async init(options: ConfigParam): Promise<void> {
         // Use the StealthPlugin to help prevent detection by anti-bot services
         // https://screenshotone.com/blog/how-to-take-a-screenshot-with-puppeteer/#preventing-puppeteer-detection
         puppeteerExtra.use(StealthPlugin());
-        puppeteerExtra.use(AdblockerPlugin());
+        // Use the AdblockerPlugin to block ads and trackers.
+        // This will also block cookie notices.
+        // Despite there being options to disable blocking of trackers and annoyances, they don't seem to work. This seems to just block everything.
+        // https://github.com/berstend/puppeteer-extra/blob/master/packages/puppeteer-extra-plugin-adblocker/readme.md
+        // We look for the blockAdsAndCookieNotices option in the options object to determine if we should use the AdblockerPlugin. The options object hasn't been
+        // fully parsed yet, so we need to check the options object directly. Because of that, the blockAdsAndCookieNotices option can only be set on the command line.
+        if (isTrueLike(options.blockAdsAndCookieNotices)) {
+            puppeteerExtra.use(AdblockerPlugin());
+        }
 
         // The puppeteer-cluster library is used to launch a cluster of browsers and pages to get the screenshots.
         // This enables us to get the screenshots faster by using multiple browsers and pages in parallel.
@@ -263,7 +276,7 @@ class Screenshot {
 const screenshotHandler = async (options: ConfigParam): Promise<void> => {
     const startTime = getStartTime();
     const screenshot = new Screenshot();
-    await screenshot.init();
+    await screenshot.init(options);
 
     let configFiles = [];
     if (Array.isArray(options.config)) {

@@ -31,6 +31,11 @@ program
         '-b, --base <string>',
         'The base URL value. If set then the URL will be appended to this value.'
     )
+    .option(
+        '--blockAdsAndCookieNotices <boolean>',
+        'Whether or not to block ads and cookie notices. This will block all ads and cookie notices on the page.',
+        true
+    )
     .option('--clipH <integer>', 'The height of clip area.')
     .option('--clipW <integer>', 'The width of clip area.')
     .option(
