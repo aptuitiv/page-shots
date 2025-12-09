@@ -63,31 +63,31 @@ page-shots -c myfile.json
 You can also use a glob pattern to specify the JSON files to use.
 
 ```bash
-page-shots -c 'myfile*.json'
+page-shots -c myfile*.json
 ```
 
 You can process all of the JSON files in the current directory by passing in a wildcard.
 
 ```bash
-page-shots -c '*.json'
+page-shots -c *.json
 ```
 
 You can also process all of the JSON files in the `screenshots` directory by passing in a path.
 
 ```bash
-page-shots -c 'screenshots/*.json'
+page-shots -c screenshots/*.json
 ```
 
 If you pass in a glob pattern then all of the JSON files that match the pattern will be processed.
 
 ```bash
-page-shots -c 'myfile*.json' 'myfile2*.json'
+page-shots -c myfile*.json myfile2*.json
 ```
 
 You can also pass in a mix of file names and glob patterns.
 
 ```bash
-page-shots -c myfile.json 'myfile2*.json' 'myfile3.json'
+page-shots -c myfile.json myfile2*.json myfile3.json
 ```
 
 ## Filenames and Directories
