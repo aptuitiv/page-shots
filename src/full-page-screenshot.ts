@@ -139,6 +139,28 @@ const getPageSizeInfo = async (page: Page): Promise<PageSizeInfo> =>
     });
 
 /**
+ * Hides the elements on the page that match the given CSS selectors.
+ *
+ * @param {Page} page The page object
+ * @param {string[]} selectors The array of CSS selectors to hide
+ * @returns {Promise<void>} A promise that resolves when the elements have been hidden
+ */
+const hideElements = async (page: Page, selectors: string[]): Promise<void> => {
+    const promises = [];
+    selectors.forEach((selector) => {
+        promises.push(
+            page.evaluate((sel) => {
+                document.querySelectorAll(sel).forEach((element) => {
+                    // eslint-disable-next-line no-param-reassign -- Must set display to none to hide the element
+                    (element as HTMLElement).style.display = 'none';
+                });
+            }, selector)
+        );
+    });
+    await Promise.all(promises);
+};
+
+/**
  * Takes a full page screenshot of a page.
  *
  * - Scrolls gradually to load lazy images
@@ -164,7 +186,7 @@ const getFullPageScreenshot = async (
     // Chromium's maximum screenshot size is 16,384 pixels. It's based on the maximum texture size supported by Chromium's software GL backend.
     // See https://issues.chromium.org/issues/41347676 for more information.
     // Visit https://webglreport.com/ in Chrome and check the "Max Texture Size" value to see the maximum texture size supported by the browser.
-    const {stitchThreshold} = url;
+    const { stitchThreshold } = url;
 
     try {
         // Handle console logs from the page so that they are printed in the console.
@@ -186,7 +208,6 @@ const getFullPageScreenshot = async (
         // Do the scroll loop to trigger lazy loading of images
         // and to get the final page size info.
         // This handles infinite scroll pages.
-
         for (let index = 0; index < maxScrollLoops; index += 1) {
             // eslint-disable-next-line no-await-in-loop -- Must scroll sequentially to trigger lazy loading
             await scrollDown(page);
@@ -236,14 +257,10 @@ const getFullPageScreenshot = async (
             const sectionScreenshots = [];
 
             for (let index = 0; index < pageSizeInfo.pages; index += 1) {
-                // if (index > 0) {
-                //     await page.evaluate(() => {
-                //         const header = document.querySelector('.js-header');
-                //         if (header) {
-                //             (header as HTMLElement).style.display = 'none';
-                //         }
-                //     });
-                // }
+                if (index > 0 && Array.isArray(url.hideStitchSelector)) {
+                    // eslint-disable-next-line no-await-in-loop -- Must hide elements before each screenshot
+                    await hideElements(page, url.hideStitchSelector);
+                }
 
                 // Pause slightly before taking the screenshot to allow the page to settle.
                 // eslint-disable-next-line no-await-in-loop -- Delay needed before each screenshot

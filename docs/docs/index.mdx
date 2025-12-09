@@ -83,6 +83,35 @@ You can use the `--fit` option to only capture the page within the specified hei
 
 You can go even further and capture just a clip of the page by using the `-clipH`, `-clipW`, `-clipX`, and `-clipY` options. You must specify all four parameters for a clip to be taken.
 
+## Full size screenshots
+
+There are two ways that full size screenshots are taken.
+
+If the height of the screenshot will be less than the `stitchThreshold` configuration value, then the native full page screenshot will be taken.
+
+If the height of the screenshot will be greater than the `stitchThreshold` configuration value, then the screenshot will be stitched together from multiple screenshots.
+
+Both methods are good methods. The stiched method handles taller pages like those with infinite scrolls.
+
+During both methods the page will first be scrolled from top to bottom to trigger any lazy loaded content to load. The scroll size is based on the viewport height, which can be configured with the `height`, `size` or `sizes` options.
+By default, after each scroll, the page will wait for 400 milliseconds to allow the content to load. This can be configured with the `--scrollDelay` option.
+
+If the stiched method is used, then the `hideStitchSelector` option can be used to hide an element during the screenshot process. This is useful for hiding a sticky header or floating element that is present on the page.
+
+You can specify multiple elements to hide by passing in multiple CSS selectors. For example:
+
+```bash
+page-shots --hideStitchSelector '.js-header' '.js-footer'
+```
+
+In the JSON config file, you can specify the `hideStitchSelector` value as an array of CSS selectors. For example:
+
+```json
+{
+    "hideStitchSelector": [".js-header", ".js-footer"]
+}
+```
+
 ## Setting screenshot size
 
 There are two ways that you can set the size of the screenshot size. (Note, the screenshot size is always in pixels.)

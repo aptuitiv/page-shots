@@ -44,6 +44,8 @@ type BaseConfigParam = {
     fullScreen?: BoolLike;
     // The height of the viewport to take the screenshot in
     height?: number | string;
+    // The CSS selector of the element to hide during the screenshot process if screenshots are stitched together. The elements are hidden after the first scroll. Common usage is to hide a sticky header or floating element.
+    hideStitchSelector?: string | string[];
     // Whether or not to save the screenshot as a jpg
     jpg?: BoolLike;
     // The name of the file to save the screenshot as. Only applies to the first URL.
@@ -125,6 +127,7 @@ type BaseConfig = {
     fileType: ImageFormat;
     fullScreen: boolean;
     height: number;
+    hideStitchSelector?: string[];
     nameFormat: string;
     quality: number;
     scrollDelay: number;

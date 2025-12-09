@@ -266,6 +266,7 @@ export class ConfigParser {
         this.#setFileType();
         this.#setFullScreen();
         this.#setHeight();
+        this.#setHideStitchElement();
         this.#setQuality();
         this.#setScrollDelay();
         this.#setStitchThreshold();
@@ -467,6 +468,29 @@ export class ConfigParser {
         }
     }
 
+    /**
+     * Sets the CSS selector of the element to hide during the screenshot process if screenshots are stitched together. The elements are hidden after the first scroll. Common usage is to hide a sticky header or floating element.
+     */
+    #setHideStitchElement() {
+        if (isStringWithValue(this.configParam?.hideStitchSelector)) {
+            this.config.hideStitchSelector = [
+                this.configParam.hideStitchSelector,
+            ];
+        } else if (Array.isArray(this.configParam.hideStitchSelector)) {
+            this.config.hideStitchSelector = [];
+            this.configParam.hideStitchSelector.forEach(
+                (hideStitchSelector) => {
+                    if (isStringWithValue(hideStitchSelector)) {
+                        this.config.hideStitchSelector.push(hideStitchSelector);
+                    }
+                }
+            );
+        }
+    }
+
+    /**
+     * Sets the device scale factor to use for the screenshot.
+     */
     #setDeviceScaleFactor() {
         if (isNumberOrNumberString(this.configParam?.pixelRatio)) {
             const deviceScaleFactor = parseInt(
