@@ -32,6 +32,7 @@ import {
 } from './types.js';
 import getFullPageScreenshot from './full-page-screenshot.js';
 import { hideElements, getUrlPath, setupUrl } from './lib/helpers.js';
+import { isStringWithValue } from './lib/types.js';
 
 // This is a workaround to get the type for the puppeteer-extra module
 // The default export doesn't have "use" in the type definition. This fixes the type error.
@@ -258,7 +259,18 @@ const screenshotHandler = async (options: ConfigParam): Promise<void> => {
     if (Array.isArray(options.config)) {
         // One or more configuration file references were provided.
         // Get the list of configuration files from the glob file references.
-        configFiles = options.config.map((config) => globSync(config)).flat();
+        configFiles = options.config
+            .map((config) => {
+                if (isStringWithValue(config) && !config.includes('*')) {
+                    // Make sure that the file name has a .json extension
+                    if (!config.endsWith('.json')) {
+                        config += '.json';
+                    }
+                }
+
+                return globSync(config);
+            })
+            .flat();
     }
 
     const promises = [];
