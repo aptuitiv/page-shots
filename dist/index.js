@@ -88,7 +88,7 @@ var defaultConfig = {
   // Holds the viewport height to get the screenshot in
   height: 900,
   // The format to generate the file name from
-  nameFormat: "{url}-{width}",
+  nameFormat: "{urlNoWww}-{width}",
   // The image quality if the screenshot is a jpg
   quality: 100,
   // Holds one or more viewport sizes to get the screenshot in
@@ -797,36 +797,35 @@ var full_page_screenshot_default = getFullPageScreenshot;
 // src/screenshot.ts
 var puppeteerExtra = puppeteerExtraModule;
 var AdblockerPlugin = AdblockerPluginModule;
+var cleanUrlPath = (path2) => {
+  let returnValue = path2;
+  if (returnValue.startsWith("/")) {
+    returnValue = returnValue.substring(1);
+  }
+  returnValue = sanitize2(returnValue, { replacement: "-" });
+  returnValue = returnValue.replace(/\.+/g, "-");
+  returnValue = returnValue.replace(/-{2,}/g, "-");
+  if (returnValue.substring(returnValue.length - 1) === "-") {
+    returnValue = returnValue.substring(0, returnValue.length - 1);
+  }
+  if (returnValue.substring(0, 1) === "-") {
+    returnValue = returnValue.substring(1);
+  }
+  return returnValue;
+};
 var formatFileName = (url, name) => {
-  let urlName = url.url.replace(/http(s?):\/\//, "");
-  urlName = sanitize2(urlName, { replacement: "-" });
-  urlName = urlName.replace(/\.+/g, "-");
-  urlName = urlName.replace(/-{2,}/g, "-");
-  if (urlName.substring(urlName.length - 1) === "-") {
-    urlName = urlName.substring(0, urlName.length - 1);
-  }
-  if (urlName.substring(0, 1) === "-") {
-    urlName = urlName.substring(1);
-  }
-  const urlNoWww = urlName.replace(/^www-/, "");
-  let path2 = url.url.replace(/http(s?):\/\//, "");
-  const pathParts = path2.split("/");
-  path2 = path2.replace(pathParts[0], "").trim();
+  const urlObject = new URL(url.url);
+  let urlName = `${urlObject.hostname}${urlObject.pathname}`;
+  urlName = cleanUrlPath(urlName);
+  const urlNoWww = urlName.replace(/^www-/, "").replace(/^www\./, "");
+  let path2 = urlObject.pathname;
   if (path2 === "/" || path2.length === 0) {
     path2 = "home";
   } else {
-    if (path2.substring(0, 1) === "/") {
+    if (path2.startsWith("/")) {
       path2 = path2.substring(1);
     }
-    path2 = sanitize2(path2, { replacement: "-" });
-    path2 = path2.replace(/\.+/g, "-");
-    path2 = path2.replace(/-{2,}/g, "-");
-    if (path2.substring(path2.length - 1) === "-") {
-      path2 = path2.substring(0, path2.length - 1);
-    }
-    if (path2.substring(0, 1) === "-") {
-      path2 = path2.substring(1);
-    }
+    path2 = cleanUrlPath(path2);
   }
   let full = "full", fit = "fit";
   if (url.fullScreen) {
@@ -893,9 +892,7 @@ var getScreenshot = async (page, url) => {
     logSuccess(`Saved ${url.path}`);
   } catch (err) {
     logError("Error while taking the screenshot", err);
-    return null;
   }
-  return null;
 };
 var getUrlPath = (url) => {
   let filename = "";

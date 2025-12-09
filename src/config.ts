@@ -184,7 +184,7 @@ export const defaultConfig: Config = {
     // Holds the viewport height to get the screenshot in
     height: 900,
     // The format to generate the file name from
-    nameFormat: '{url}-{width}',
+    nameFormat: '{urlNoWww}-{width}',
     // The image quality if the screenshot is a jpg
     quality: 100,
     // Holds one or more viewport sizes to get the screenshot in
