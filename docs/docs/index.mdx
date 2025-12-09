@@ -214,6 +214,22 @@ page-shots --hideSelector '.js-header' --hideSelector '.js-footer'
 }
 ```
 
+## Hiding chat widgets
+
+If you need to hide chat widgets that are present on the page then you can use the `hideSelector` option to hide the chat widget. See the [Hiding elements](#hiding-elements) section for more information.
+
+Inspect the page source in your browser and look for the chat widget. Get the CSS selector for the chat widget and use it to hide the chat widget.
+
+```bash
+page-shots --hideSelector '.js-chat-widget'
+```
+
+```json
+{
+    "hideSelector": [".js-chat-widget"]
+}
+```
+
 ## Setting screenshot size
 
 There are two ways that you can set the size of the screenshot size. (Note, the screenshot size is always in pixels.)
