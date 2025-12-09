@@ -32,6 +32,64 @@ There are two ways to use the Page Shots library.
 1. Specify one or more URLs on the [command line](/command-line) to get screenshots for.
 2. Use a [JSON file](/json-config) to specify one or more URLs and process it on the command line.
 
+## Configuration filenames
+
+Instead of specifying the URLs to get sreenshots for and their configuration through the command line options you can do all of that in a [JSON file](/json-config).
+
+You specify the name of the JSON file to use with the `-c` or `--config` command line option.
+
+```bash
+page-shots -c myfile.json
+```
+
+You can specify multiple JSON files to use by passing in multiple file names.
+
+```bash
+page-shots -c myfile.json  myfile2.json
+```
+
+If you don't use a glob pattern (i.e. don't include a `*` in the file name) then you can leave the `.json` extension off.
+
+```bash
+page-shots -c myfile
+```
+
+is the same as:
+
+```bash
+page-shots -c myfile.json
+```
+
+You can also use a glob pattern to specify the JSON files to use.
+
+```bash
+page-shots -c 'myfile*.json'
+```
+
+You can process all of the JSON files in the current directory by passing in a wildcard.
+
+```bash
+page-shots -c '*.json'
+```
+
+You can also process all of the JSON files in the `screenshots` directory by passing in a path.
+
+```bash
+page-shots -c 'screenshots/*.json'
+```
+
+If you pass in a glob pattern then all of the JSON files that match the pattern will be processed.
+
+```bash
+page-shots -c 'myfile*.json' 'myfile2*.json'
+```
+
+You can also pass in a mix of file names and glob patterns.
+
+```bash
+page-shots -c myfile.json 'myfile2*.json' 'myfile3.json'
+```
+
 ## Filenames and Directories
 
 By default the screenshot will be saved in the same directory that you call the command in and by default the file name will be based on the URL of the page. Also, by default, the screenshot will be a jpg image.
