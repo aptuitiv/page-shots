@@ -271,14 +271,18 @@ const screenshotHandler = async (options: ConfigParam): Promise<void> => {
         // Get the list of configuration files from the glob file references.
         configFiles = options.config
             .map((config) => {
-                if (isStringWithValue(config) && !config.includes('*')) {
+                let configOption = config;
+                if (
+                    isStringWithValue(configOption) &&
+                    !configOption.includes('*')
+                ) {
                     // Make sure that the file name has a .json extension
-                    if (!config.endsWith('.json')) {
-                        config += '.json';
+                    if (!configOption.endsWith('.json')) {
+                        configOption += '.json';
                     }
                 }
 
-                return globSync(config);
+                return globSync(configOption);
             })
             .flat();
     }

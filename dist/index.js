@@ -1118,12 +1118,13 @@ var screenshotHandler = async (options) => {
   let configFiles = [];
   if (Array.isArray(options.config)) {
     configFiles = options.config.map((config) => {
-      if (isStringWithValue(config) && !config.includes("*")) {
-        if (!config.endsWith(".json")) {
-          config += ".json";
+      let configOption = config;
+      if (isStringWithValue(configOption) && !configOption.includes("*")) {
+        if (!configOption.endsWith(".json")) {
+          configOption += ".json";
         }
       }
-      return globSync(config);
+      return globSync(configOption);
     }).flat();
   }
   const promises = [];
