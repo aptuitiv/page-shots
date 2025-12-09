@@ -210,9 +210,9 @@ export class ConfigParser {
         if (isObjectWithValues(data)) {
             // If the configuration file is set in the configuration data
             // and the processConfigFile flag is set, parse the configuration file first.
-            if (this.setProcessConfigFile && isStringWithValue(data?.config)) {
-                this.#parseFile(data.config);
-            }
+            // if (this.setProcessConfigFile && isStringWithValue(data?.config)) {
+            //     this.#parseFile(data.config);
+            // }
 
             // Parse the configuration data
             this.#parseConfig(data);

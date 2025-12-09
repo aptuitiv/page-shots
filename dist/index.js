@@ -209,9 +209,6 @@ var ConfigParser = class {
    */
   parse(data) {
     if (isObjectWithValues(data)) {
-      if (this.setProcessConfigFile && isStringWithValue(data?.config)) {
-        this.#parseFile(data.config);
-      }
       this.#parseConfig(data);
     }
   }
@@ -720,14 +717,13 @@ var init_default = initJson;
 
 // src/screenshot.ts
 import fs3 from "fs-extra";
-import { dirname, extname as extname3, join as join2 } from "path";
+import { globSync } from "glob";
+import { dirname, extname as extname4 } from "path";
 import { Cluster } from "puppeteer-cluster";
-import sanitize2 from "sanitize-filename";
 import puppeteerExtraModule from "puppeteer-extra";
 import AdblockerPluginModule from "puppeteer-extra-plugin-adblocker";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import { setTimeout as setTimeout2 } from "timers/promises";
-import { parse } from "tldts";
 
 // src/lib/time.ts
 function getStartTime() {
@@ -747,6 +743,9 @@ import sharp from "sharp";
 import { setTimeout } from "timers/promises";
 
 // src/lib/helpers.ts
+import { extname as extname3, join as join2 } from "path";
+import sanitize2 from "sanitize-filename";
+import { parse } from "tldts";
 var hideElements = async (page, selectors) => {
   const promises = [];
   selectors.forEach((selector) => {
@@ -759,6 +758,113 @@ var hideElements = async (page, selectors) => {
     );
   });
   await Promise.all(promises);
+};
+var cleanUrl = (value) => {
+  let returnValue = value;
+  if (returnValue.startsWith("/")) {
+    returnValue = returnValue.substring(1);
+  }
+  returnValue = sanitize2(returnValue, { replacement: "-" });
+  returnValue = returnValue.replace(/\.+/g, "-");
+  returnValue = returnValue.replace(/-{2,}/g, "-");
+  if (returnValue.substring(returnValue.length - 1) === "-") {
+    returnValue = returnValue.substring(0, returnValue.length - 1);
+  }
+  if (returnValue.substring(0, 1) === "-") {
+    returnValue = returnValue.substring(1);
+  }
+  return returnValue;
+};
+var formatFileName = (url, name) => {
+  const urlObject = new URL(url.url);
+  const tldtsResult = parse(url.url);
+  let urlName = `${urlObject.hostname}${urlObject.pathname}`;
+  urlName = cleanUrl(urlName);
+  const urlNoWww = urlName.replace(/^www-/, "").replace(/^www\./, "");
+  const hostName = cleanUrl(urlObject.hostname);
+  const hostNameNoWww = hostName.replace(/^www-/, "").replace(/^www\./, "");
+  const domainName = cleanUrl(tldtsResult.domain);
+  const secondLevelDomain = cleanUrl(tldtsResult.domainWithoutSuffix);
+  const topLevelDomain = cleanUrl(tldtsResult.publicSuffix);
+  const subdomain = cleanUrl(tldtsResult.subdomain);
+  let path2 = urlObject.pathname;
+  if (path2 === "/" || path2.length === 0) {
+    path2 = "home";
+  } else {
+    if (path2.startsWith("/")) {
+      path2 = path2.substring(1);
+    }
+    path2 = cleanUrl(path2);
+  }
+  let full = "full", fit = "fit";
+  if (url.fullScreen) {
+    fit = "full";
+  } else {
+    full = "fit";
+  }
+  let returnValue = name.replace(/{url}/g, urlName);
+  returnValue = returnValue.replace(/{urlNoWww}/g, urlNoWww);
+  returnValue = returnValue.replace(/{hostname}/g, hostName);
+  returnValue = returnValue.replace(/{hostnameNoWww}/g, hostNameNoWww);
+  returnValue = returnValue.replace(/{domain}/g, domainName);
+  returnValue = returnValue.replace(
+    /{(secondLevelDomain|sld)}/g,
+    secondLevelDomain
+  );
+  returnValue = returnValue.replace(
+    /{(topLevelDomain|tld)}/g,
+    topLevelDomain
+  );
+  returnValue = returnValue.replace(/{subdomain}/g, subdomain);
+  returnValue = returnValue.replace(/{(path|stub)}/g, path2);
+  returnValue = returnValue.replace(/{width}/g, url.width.toString());
+  returnValue = returnValue.replace(/{height}/g, url.height.toString());
+  returnValue = returnValue.replace(/{quality}/g, url.quality.toString());
+  returnValue = returnValue.replace(/{full}/g, full);
+  returnValue = returnValue.replace(/{fit}/g, fit);
+  returnValue = returnValue.replace(/{size}/g, `${url.width}x${url.height}`);
+  return returnValue;
+};
+var getUrlPath = (url) => {
+  let filename = "";
+  if (isStringWithValue(url.fileName)) {
+    filename = url.fileName;
+  } else if (isStringWithValue(url.nameFormat)) {
+    filename = formatFileName(url, url.nameFormat);
+  } else {
+    filename = formatFileName(url, "{url}");
+  }
+  const ext = extname3(filename).toLowerCase().replace(".", "");
+  if (!isStringWithValue(ext) || !["jpg", "jpeg", "png", "webp"].includes(ext)) {
+    filename += `.${url.fileType}`;
+  }
+  return join2(url.dir, filename);
+};
+var setupUrl = (url, config) => {
+  const configParser = new ConfigParser(config);
+  configParser.setDoNotProcessUrls();
+  configParser.setDoNotProcessSizes();
+  configParser.parse(url);
+  const urlConfig = configParser.getConfig();
+  delete urlConfig.urls;
+  const urlData = {
+    ...urlConfig,
+    url: url.url,
+    path: ""
+  };
+  if (isStringWithValue(urlData.baseUrl)) {
+    if (urlData.url.substring(0, urlData.baseUrl.length) !== urlData.baseUrl && urlData.url.match(/^http(s?):\/\//) === null) {
+      if (urlData.url.substring(0, 1) !== "/") {
+        urlData.url = `/${urlData.url}`;
+      }
+      urlData.url = urlData.baseUrl + urlData.url;
+    }
+  }
+  if (urlData.url.match(/^http(s?):\/\//) === null) {
+    urlData.url = `https://${urlData.url}`;
+  }
+  urlData.path = getUrlPath(urlData);
+  return urlData;
 };
 
 // src/full-page-screenshot.ts
@@ -892,72 +998,6 @@ var full_page_screenshot_default = getFullPageScreenshot;
 // src/screenshot.ts
 var puppeteerExtra = puppeteerExtraModule;
 var AdblockerPlugin = AdblockerPluginModule;
-var cleanUrl = (value) => {
-  let returnValue = value;
-  if (returnValue.startsWith("/")) {
-    returnValue = returnValue.substring(1);
-  }
-  returnValue = sanitize2(returnValue, { replacement: "-" });
-  returnValue = returnValue.replace(/\.+/g, "-");
-  returnValue = returnValue.replace(/-{2,}/g, "-");
-  if (returnValue.substring(returnValue.length - 1) === "-") {
-    returnValue = returnValue.substring(0, returnValue.length - 1);
-  }
-  if (returnValue.substring(0, 1) === "-") {
-    returnValue = returnValue.substring(1);
-  }
-  return returnValue;
-};
-var formatFileName = (url, name) => {
-  const urlObject = new URL(url.url);
-  const tldtsResult = parse(url.url);
-  let urlName = `${urlObject.hostname}${urlObject.pathname}`;
-  urlName = cleanUrl(urlName);
-  const urlNoWww = urlName.replace(/^www-/, "").replace(/^www\./, "");
-  const hostName = cleanUrl(urlObject.hostname);
-  const hostNameNoWww = hostName.replace(/^www-/, "").replace(/^www\./, "");
-  const domainName = cleanUrl(tldtsResult.domain);
-  const secondLevelDomain = cleanUrl(tldtsResult.domainWithoutSuffix);
-  const topLevelDomain = cleanUrl(tldtsResult.publicSuffix);
-  const subdomain = cleanUrl(tldtsResult.subdomain);
-  let path2 = urlObject.pathname;
-  if (path2 === "/" || path2.length === 0) {
-    path2 = "home";
-  } else {
-    if (path2.startsWith("/")) {
-      path2 = path2.substring(1);
-    }
-    path2 = cleanUrl(path2);
-  }
-  let full = "full", fit = "fit";
-  if (url.fullScreen) {
-    fit = "full";
-  } else {
-    full = "fit";
-  }
-  let returnValue = name.replace(/{url}/g, urlName);
-  returnValue = returnValue.replace(/{urlNoWww}/g, urlNoWww);
-  returnValue = returnValue.replace(/{hostname}/g, hostName);
-  returnValue = returnValue.replace(/{hostnameNoWww}/g, hostNameNoWww);
-  returnValue = returnValue.replace(/{domain}/g, domainName);
-  returnValue = returnValue.replace(
-    /{(secondLevelDomain|sld)}/g,
-    secondLevelDomain
-  );
-  returnValue = returnValue.replace(
-    /{(topLevelDomain|tld)}/g,
-    topLevelDomain
-  );
-  returnValue = returnValue.replace(/{subdomain}/g, subdomain);
-  returnValue = returnValue.replace(/{(path|stub)}/g, path2);
-  returnValue = returnValue.replace(/{width}/g, url.width.toString());
-  returnValue = returnValue.replace(/{height}/g, url.height.toString());
-  returnValue = returnValue.replace(/{quality}/g, url.quality.toString());
-  returnValue = returnValue.replace(/{full}/g, full);
-  returnValue = returnValue.replace(/{fit}/g, fit);
-  returnValue = returnValue.replace(/{size}/g, `${url.width}x${url.height}`);
-  return returnValue;
-};
 var getScreenshot = async (page, url) => {
   let message = `Viewport size: ${url.width}px / ${url.height}px`;
   if (url.clip) {
@@ -1011,96 +1051,162 @@ var getScreenshot = async (page, url) => {
     logError("Error while taking the screenshot", err);
   }
 };
-var getUrlPath = (url) => {
-  let filename = "";
-  if (isStringWithValue(url.fileName)) {
-    filename = url.fileName;
-  } else if (isStringWithValue(url.nameFormat)) {
-    filename = formatFileName(url, url.nameFormat);
-  } else {
-    filename = formatFileName(url, "{url}");
+var Screenshot = class {
+  /**
+   * Holds the cluster object
+   *
+   * @type {Cluster}
+   */
+  #cluster;
+  /**
+   * Holds the config parser object
+   *
+   * @type {ConfigParser}
+   */
+  #configParser;
+  /**
+   * Constructor
+   */
+  constructor() {
+    this.#cluster = null;
+    this.#configParser = new ConfigParser();
   }
-  const ext = extname3(filename).toLowerCase().replace(".", "");
-  if (!isStringWithValue(ext) || !["jpg", "jpeg", "png", "webp"].includes(ext)) {
-    filename += `.${url.fileType}`;
-  }
-  return join2(url.dir, filename);
-};
-var setupUrl = (url, config) => {
-  const configParser = new ConfigParser(config);
-  configParser.setDoNotProcessUrls();
-  configParser.setDoNotProcessSizes();
-  configParser.parse(url);
-  const urlConfig = configParser.getConfig();
-  delete urlConfig.urls;
-  const urlData = {
-    ...urlConfig,
-    url: url.url,
-    path: ""
-  };
-  urlData.path = getUrlPath(urlData);
-  if (isStringWithValue(urlData.baseUrl)) {
-    if (urlData.url.substring(0, urlData.baseUrl.length) !== urlData.baseUrl && urlData.url.match(/^http(s?):\/\//) === null) {
-      if (urlData.url.substring(0, 1) !== "/") {
-        urlData.url = `/${urlData.url}`;
-      }
-      urlData.url = urlData.baseUrl + urlData.url;
-    }
-  }
-  if (urlData.url.match(/^http(s?):\/\//) === null) {
-    urlData.url = `https://${urlData.url}`;
-  }
-  return urlData;
-};
-var getScreenshots = async (config) => {
-  try {
-    const startTime = getStartTime();
-    logMessage(
-      `Getting screenshot${config.urls.length === 1 ? "" : "s"} for ${config.urls.length} URL${config.urls.length === 1 ? "" : "s"}.`
-    );
+  /**
+   * Initialize the screenshot class
+   *
+   * @returns {Promise<void>}
+   */
+  async init() {
     puppeteerExtra.use(StealthPlugin());
     puppeteerExtra.use(AdblockerPlugin());
-    const cluster = await Cluster.launch({
+    this.#cluster = await Cluster.launch({
       concurrency: Cluster.CONCURRENCY_CONTEXT,
       maxConcurrency: 10,
       puppeteer: puppeteerExtra
     });
-    await cluster.task(async ({ page, data: url }) => {
+    await this.#cluster.task(async ({ page, data: url }) => {
+      console.log("Getting screenshot for: ", url.url);
       await getScreenshot(page, url);
     });
-    for (const url of config.urls) {
-      const urlObject = setupUrl(url, config);
-      if (urlObject.sizes.length > 0) {
-        urlObject.sizes.forEach((size) => {
-          const configParser = new ConfigParser(urlObject);
-          configParser.setDoNotProcessUrls();
-          configParser.setDoNotProcessSizes();
-          configParser.parse(size);
-          const sizeConfig = configParser.getConfig();
-          delete sizeConfig.sizes;
-          delete sizeConfig.urls;
-          const sizeData = {
-            ...sizeConfig,
-            url: urlObject.url,
-            path: ""
-          };
-          sizeData.path = getUrlPath(sizeData);
-          cluster.queue(sizeData);
-        });
-      } else {
-        cluster.queue(urlObject);
-      }
+  }
+  async processOptions(options) {
+    console.log("Processing options: ", options);
+    this.#configParser.parse(options);
+    if (this.#configParser.hasUrls()) {
+      this.getScreenshots(this.#configParser.getConfig()).then(() => {
+        logSuccess(
+          "End of Config: All screenshots have been taken."
+        );
+      }).catch((err) => {
+        logError("Error getting screenshots: ", err);
+      });
+    } else {
+      logError(
+        "No URLs were provided to get screenshots of. Nothing to do."
+      );
     }
-    await cluster.idle();
-    await cluster.close();
-    const time = getElapsedTime(startTime);
-    logMessage(`Total time to get screenshots: ${time}s`);
-  } catch (err) {
-    logError(`Error getting screenshots`, err);
-    process.exit(1);
+  }
+  /**
+   * Load the URLs and get the screenshots
+   *
+   * @param {Config} config The configuration object
+   * @returns {Promise<void>}
+   */
+  async getScreenshots(config) {
+    console.log("getScreenshotsConfig: ", config);
+    try {
+      logMessage(
+        `Getting screenshot${config.urls.length === 1 ? "" : "s"} for ${config.urls.length} URL${config.urls.length === 1 ? "" : "s"}.`
+      );
+      console.log("Getting screenshots for: ", config.urls);
+      for (const url of config.urls) {
+        const urlObject = setupUrl(url, config);
+        if (urlObject.sizes.length > 0) {
+          urlObject.sizes.forEach((size) => {
+            const configParser = new ConfigParser(urlObject);
+            configParser.setDoNotProcessUrls();
+            configParser.setDoNotProcessSizes();
+            configParser.parse(size);
+            const sizeConfig = configParser.getConfig();
+            delete sizeConfig.sizes;
+            delete sizeConfig.urls;
+            const sizeData = {
+              ...sizeConfig,
+              url: urlObject.url,
+              path: ""
+            };
+            sizeData.path = getUrlPath(sizeData);
+            this.#cluster.queue(sizeData);
+          });
+        } else {
+          this.#cluster.queue(urlObject);
+        }
+      }
+    } catch (err) {
+      logError(`Error getting screenshots`, err);
+      process.exit(1);
+    }
+  }
+  async end() {
+    await this.#cluster.idle();
+    await this.#cluster.close();
   }
 };
-var screenshot_default = getScreenshots;
+var screenshotHandler = async (options) => {
+  const startTime = getStartTime();
+  const screenshot = new Screenshot();
+  await screenshot.init();
+  let configFiles = [];
+  if (Array.isArray(options.config)) {
+    configFiles = options.config.map((config) => globSync(config)).flat();
+    console.log("Config files: ", options.config, configFiles);
+  }
+  console.log("configFiles: ", configFiles);
+  const promises = [];
+  if (configFiles.length > 0) {
+    configFiles.forEach(async (file) => {
+      try {
+        let configFile = "shots.json";
+        if (typeof file === "string" && file.length > 0) {
+          configFile = file;
+          const ext = extname4(file).toLowerCase().replace(".", "");
+          if (ext.length === 0) {
+            configFile += ".json";
+          }
+        }
+        if (fs3.existsSync(configFile)) {
+          console.log("Processing config file: ", configFile);
+          promises.push(() => {
+            screenshot.processOptions(fs3.readJsonSync(configFile));
+          });
+        } else {
+          logError(
+            `The JSON config file "${configFile}" could not be found`
+          );
+        }
+      } catch (err) {
+        logError(
+          `Error while processing the JSON config file ${file}`,
+          err
+        );
+        process.exit();
+      }
+    });
+  } else {
+    promises.push(() => {
+      screenshot.processOptions(options);
+    });
+  }
+  console.log("promises: ", promises);
+  await Promise.all(promises);
+  console.log("All screenshots have been taken.");
+  console.log("Ending screenshots.");
+  await screenshot.end();
+  const time = getElapsedTime(startTime);
+  logMessage(`Total time to get screenshots: ${time}s`);
+  console.log("Screenshots ended.");
+};
+var screenshot_default = screenshotHandler;
 
 // src/index.ts
 var __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -1118,7 +1224,7 @@ program.version(thisPackageJson.version).description(thisPackageJson.description
   "--clipY <integer>",
   "The y-coordinate of top-left corner of clip area."
 ).option(
-  "-c, --config <string>",
+  "-c, --config <string...>",
   "The name of the JSON config file to use to get the screenshots. If this is set all other arguments are ignored."
 ).option(
   "-D, --delay <integer>",
@@ -1185,21 +1291,9 @@ program.version(thisPackageJson.version).description(thisPackageJson.description
 ).option(
   "--webp",
   'Set the image type for screenshots to be "webp". Alternate method to using -t.'
-).action((options) => {
-  const configParser = new ConfigParser();
-  configParser.setProcessConfigFile();
-  configParser.parse(options);
-  if (configParser.hasUrls()) {
-    screenshot_default(configParser.getConfig()).then(() => {
-      logSuccess("All screenshots have been taken.");
-    }).catch((err) => {
-      logError("Error getting screenshots: ", err);
-    });
-  } else {
-    logError(
-      "No URLs were provided to get screenshots of. Nothing to do."
-    );
-  }
+).action(async (options) => {
+  await screenshot_default(options);
+  logSuccess("END OF SCRIPT: All screenshots have been taken.");
 });
 program.addHelpText(
   "after",
