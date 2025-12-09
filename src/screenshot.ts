@@ -32,7 +32,6 @@ import {
 } from './types.js';
 import getFullPageScreenshot from './full-page-screenshot.js';
 import { hideElements, getUrlPath, setupUrl } from './lib/helpers.js';
-import { isStringWithValue } from './lib/types.js';
 
 // This is a workaround to get the type for the puppeteer-extra module
 // The default export doesn't have "use" in the type definition. This fixes the type error.
@@ -122,88 +121,8 @@ const getScreenshot = async (page: Page, url: UrlData) => {
 };
 
 /**
- * Load the URLs and get the screenshots
- *
- * @param {Config} config The configuration object
- * @returns {Promise<void>}
+ * The Screenshot class
  */
-// const getScreenshots = async (config: Config): Promise<void> => {
-//     try {
-//         const startTime = getStartTime();
-//         logMessage(
-//             `Getting screenshot${config.urls.length === 1 ? '' : 's'} for ${
-//                 config.urls.length
-//             } URL${config.urls.length === 1 ? '' : 's'}.`
-//         );
-
-//         // Use the StealthPlugin to help prevent detection by anti-bot services
-//         // https://screenshotone.com/blog/how-to-take-a-screenshot-with-puppeteer/#preventing-puppeteer-detection
-//         // puppeteerExtra.use(StealthPlugin());
-//         // puppeteerExtra.use(AdblockerPlugin());
-
-//         // // The puppeteer-cluster library is used to launch a cluster of browsers and pages to get the screenshots.
-//         // // This enables us to get the screenshots faster by using multiple browsers and pages in parallel.
-//         // // https://github.com/thomasdondorf/puppeteer-cluster
-//         // const cluster = await Cluster.launch({
-//         //     concurrency: Cluster.CONCURRENCY_CONTEXT,
-//         //     maxConcurrency: 10,
-//         //     puppeteer: puppeteerExtra,
-//         // });
-
-//         // // Set up the task to call for each URL
-//         // await cluster.task(async ({ page, data: url }) => {
-//         //     await getScreenshot(page, url);
-//         // });
-
-//         // Queue the URLs to be processed
-//         for (const url of config.urls) {
-//             const urlObject = setupUrl(url, config);
-
-//             if (urlObject.sizes.length > 0) {
-//                 // The URL has one or more configured screenshot sizes.
-//                 // Queue the sizes to be processed
-//                 urlObject.sizes.forEach((size) => {
-//                     // Use the ConfigParser to parse the size object and get the size configuration
-//                     const configParser = new ConfigParser(urlObject);
-//                     configParser.setDoNotProcessUrls();
-//                     configParser.setDoNotProcessSizes();
-
-//                     // Parse the size object and get the size configuration
-//                     configParser.parse(size);
-//                     const sizeConfig = configParser.getConfig();
-
-//                     // Remove unnecessary configuration values
-//                     delete sizeConfig.sizes;
-//                     delete sizeConfig.urls;
-//                     const sizeData: SizeData = {
-//                         ...sizeConfig,
-//                         url: urlObject.url,
-//                         path: '',
-//                     };
-//                     // Set the path to the path of the URL
-//                     sizeData.path = getUrlPath(sizeData);
-
-//                     cluster.queue(sizeData);
-//                 });
-//             } else {
-//                 // The URL has no configured screenshot sizes.
-//                 // Queue the URL to be processed
-//                 cluster.queue(urlObject);
-//             }
-//         }
-
-//         await cluster.idle();
-//         await cluster.close();
-
-//         // Output the total time it took to get the screenshots
-//         const time = getElapsedTime(startTime);
-//         logMessage(`Total time to get screenshots: ${time}s`);
-//     } catch (err) {
-//         logError(`Error getting screenshots`, err);
-//         process.exit(1);
-//     }
-// };
-
 class Screenshot {
     /**
      * Holds the cluster object
@@ -213,18 +132,10 @@ class Screenshot {
     #cluster: Cluster;
 
     /**
-     * Holds the config parser object
-     *
-     * @type {ConfigParser}
-     */
-    #configParser: ConfigParser;
-
-    /**
      * Constructor
      */
     constructor() {
         this.#cluster = null;
-        this.#configParser = new ConfigParser();
     }
 
     /**
@@ -249,25 +160,22 @@ class Screenshot {
 
         // Set up the task to call for each URL
         await this.#cluster.task(async ({ page, data: url }) => {
-            console.log('Getting screenshot for: ', url.url);
             await getScreenshot(page, url);
         });
     }
 
-    async processOptions(options: ConfigParam) {
-        console.log('Processing options: ', options);
-        this.#configParser.parse(options);
+    /**
+     * Process the configuration options
+     *
+     * @param {ConfigParam} options The configuration options to process. They can come from the command line arguments or a JSON config file.
+     * @returns {Promise<void>}
+     */
+    async processOptions(options: ConfigParam): Promise<void> {
+        const configParser = new ConfigParser();
+        configParser.parse(options);
 
-        if (this.#configParser.hasUrls()) {
-            this.getScreenshots(this.#configParser.getConfig())
-                .then(() => {
-                    logSuccess(
-                        'End of Config: All screenshots have been taken.'
-                    );
-                })
-                .catch((err) => {
-                    logError('Error getting screenshots: ', err);
-                });
+        if (configParser.hasUrls()) {
+            this.getScreenshots(configParser.getConfig());
         } else {
             logError(
                 'No URLs were provided to get screenshots of. Nothing to do.'
@@ -282,14 +190,12 @@ class Screenshot {
      * @returns {Promise<void>}
      */
     async getScreenshots(config: Config): Promise<void> {
-        console.log('getScreenshotsConfig: ', config);
         try {
             logMessage(
                 `Getting screenshot${config.urls.length === 1 ? '' : 's'} for ${
                     config.urls.length
                 } URL${config.urls.length === 1 ? '' : 's'}.`
             );
-            console.log('Getting screenshots for: ', config.urls);
 
             // Queue the URLs to be processed
             for (const url of config.urls) {
@@ -338,6 +244,11 @@ class Screenshot {
     }
 }
 
+/**
+ * Entry point for processing the screenshots
+ *
+ * @param {ConfigParam} options The configuration options to process. These come from the command line arguments.
+ */
 const screenshotHandler = async (options: ConfigParam): Promise<void> => {
     const startTime = getStartTime();
     const screenshot = new Screenshot();
@@ -345,13 +256,14 @@ const screenshotHandler = async (options: ConfigParam): Promise<void> => {
 
     let configFiles = [];
     if (Array.isArray(options.config)) {
+        // One or more configuration file references were provided.
+        // Get the list of configuration files from the glob file references.
         configFiles = options.config.map((config) => globSync(config)).flat();
-        console.log('Config files: ', options.config, configFiles);
     }
-    console.log('configFiles: ', configFiles);
 
     const promises = [];
     if (configFiles.length > 0) {
+        // One or more JSON config files were provided. Process each one.
         configFiles.forEach(async (file) => {
             try {
                 let configFile = 'shots.json';
@@ -363,10 +275,10 @@ const screenshotHandler = async (options: ConfigParam): Promise<void> => {
                     }
                 }
                 if (fs.existsSync(configFile)) {
-                    console.log('Processing config file: ', configFile);
-                    promises.push(() => {
-                        screenshot.processOptions(fs.readJsonSync(configFile));
-                    });
+                    logMessage(`Processing config file: ${configFile}`);
+                    promises.push(
+                        screenshot.processOptions(fs.readJsonSync(configFile))
+                    );
                 } else {
                     logError(
                         `The JSON config file "${configFile}" could not be found`
@@ -381,20 +293,14 @@ const screenshotHandler = async (options: ConfigParam): Promise<void> => {
             }
         });
     } else {
-        promises.push(() => {
-            screenshot.processOptions(options);
-        });
+        promises.push(screenshot.processOptions(options));
     }
-    console.log('promises: ', promises);
 
     await Promise.all(promises);
-    console.log('All screenshots have been taken.');
-    console.log('Ending screenshots.');
     await screenshot.end();
     // Output the total time it took to get the screenshots
     const time = getElapsedTime(startTime);
     logMessage(`Total time to get screenshots: ${time}s`);
-    console.log('Screenshots ended.');
 };
 
 export default screenshotHandler;
