@@ -3,17 +3,14 @@
 // Packages
 import { Command, Option } from 'commander';
 import fs from 'fs-extra';
-import path, { extname } from 'path';
+import path from 'path';
 import { fileURLToPath } from 'url';
-import { globSync } from 'glob';
 
 // Library
-import { ConfigParser, maxDelay } from './config.js';
-import { logError, logSuccess } from './lib/log.js';
+import { maxDelay } from './config.js';
+import { logSuccess } from './lib/log.js';
 import init from './init.js';
 import screenshotHandler from './screenshot.js';
-import { isStringWithValue } from './lib/types.js';
-import { ConfigParam } from './types.js';
 
 // Get the directory name of the current module
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -22,32 +19,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const thisPackageJson = fs.readJsonSync(
     path.resolve(__dirname, '../package.json')
 );
-
-// const doScreenshots = async (
-//     configParser: ConfigParser,
-//     options: ConfigParam,
-//     screenshot: Screenshot
-// ): Promise<void> =>
-//     new Promise<void>((resolve, reject) => {
-//         console.log('Doing screenshots for: ', options);
-//         configParser.parse(options);
-//         if (configParser.hasUrls()) {
-//             screenshot
-//                 .getScreenshots(configParser.getConfig())
-//                 .then(() => {
-//                     logSuccess('All screenshots have been taken.');
-//                     resolve();
-//                 })
-//                 .catch((err) => {
-//                     logError('Error getting screenshots: ', err);
-//                     reject(err);
-//                 });
-//         } else {
-//             logError(
-//                 'No URLs were provided to get screenshots of. Nothing to do.'
-//             );
-//         }
-//     });
 
 // Set up the command line options
 const program = new Command();
@@ -163,69 +134,7 @@ program
     )
     .action(async (options) => {
         await screenshotHandler(options);
-        logSuccess('END OF SCRIPT: All screenshots have been taken.');
-        // Set up the screenshot class
-        // const screenshot = new Screenshot();
-        // await screenshot.init();
-
-        // const configParser = new ConfigParser();
-        // let configFiles = [];
-        // if (isStringWithValue(options.config)) {
-        //     configFiles = globSync(options.config);
-        //     console.log('Config files: ', options.config, configFiles);
-        // }
-
-        // if (configFiles.length > 0) {
-        //     configFiles.forEach((file) => {
-        //         try {
-        //             let configFile = 'shots.json';
-        //             if (typeof file === 'string' && file.length > 0) {
-        //                 configFile = file;
-        //                 const ext = extname(file)
-        //                     .toLowerCase()
-        //                     .replace('.', '');
-        //                 if (ext.length === 0) {
-        //                     configFile += '.json';
-        //                 }
-        //             }
-        //             if (fs.existsSync(configFile)) {
-        //                 doScreenshots(
-        //                     configParser,
-        //                     fs.readJsonSync(configFile),
-        //                     screenshot
-        //                 );
-        //             } else {
-        //                 logError(
-        //                     `The JSON config file "${configFile}" could not be found`
-        //                 );
-        //             }
-        //         } catch (err) {
-        //             logError(
-        //                 `Error while processing the JSON config file ${file}`,
-        //                 err
-        //             );
-        //             process.exit();
-        //         }
-        //     });
-        // } else {
-        //     doScreenshots(configParser, options, screenshot);
-        // }
-
-        // configParser.setProcessConfigFile();
-        // configParser.parse(options);
-        // if (configParser.hasUrls()) {
-        //     getScreenshots(configParser.getConfig())
-        //         .then(() => {
-        //             logSuccess('All screenshots have been taken.');
-        //         })
-        //         .catch((err) => {
-        //             logError('Error getting screenshots: ', err);
-        //         });
-        // } else {
-        //     logError(
-        //         'No URLs were provided to get screenshots of. Nothing to do.'
-        //     );
-        // }
+        logSuccess('All screenshots have been taken.');
     });
 
 // Custom help output
