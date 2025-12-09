@@ -48,19 +48,23 @@ The file name can include a directory path. For example: `screenshots/shot-{stub
 
 Instead of specifying a specific file name, you can specify a format to follow. There are a few placeholders that you can use in the file name to be replaced with information about the screenshot.
 
-| Placeholder          | Description                                                                                                                                                                |
-| :------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `{fit}`              | `fit` if the screenshot will only be for the specified width and height. `full` if the screenshot will be for the full page.                                               |
-| `{full}`             | `fit` if the screenshot will only be for the specified width and height. `full` if the screenshot will be for the full page.                                               |
-| `{height}`           | The height of the screenshot or viewport.                                                                                                                                  |
-| `{hostname}`         | The hostname of the URL. This is the domain name and any subdomains.                                                                                                       |
-| `{hostnameNoWww}`    | The hostname of the URL. This is the domain name and any subdomains.                                                                                                       |
-| `{quality}`          | The image quality of the jpg image.                                                                                                                                        |
-| `{size}`             | The name of the size. Set with the `key` value in a size object. If it's not set then the value will be the width and height separated by an "x". For example, `1300x800`. |
-| `{path}` or `{stub}` | The URL path. This would be the part of the URL after the domain name.                                                                                                     |
-| `{url}`              | The filename friendly version of the URL.                                                                                                                                  |
-| `{urlNoWww}`         | The filename friendly version of the URL without the "www." prefix.                                                                                                        |
-| `{width}`            | The width of the screenshot.                                                                                                                                               |
+| Placeholder                      | Description                                                                                                                                                                |
+| :------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `{fit}`                          | `fit` if the screenshot will only be for the specified width and height. `full` if the screenshot will be for the full page.                                               |
+| `{full}`                         | `fit` if the screenshot will only be for the specified width and height. `full` if the screenshot will be for the full page.                                               |
+| `{height}`                       | The height of the screenshot or viewport.                                                                                                                                  |
+| `{hostname}`                     | The hostname of the URL. This is the domain name and any subdomains.                                                                                                       |
+| `{hostnameNoWww}`                | The hostname of the URL. This is the domain name and any subdomains.                                                                                                       |
+| `{domain}`                       | The domain name of the URL. This is the domain name without any subdomains. For example, "aptuitiv.com"                                                                    |
+| `{secondLevelDomain}` or `{sld}` | The second level domain name of the URL. This is the domain name without the top level domain. For example, "aptuitiv"                                                     |
+| `{topLevelDomain}` or `{tld}`    | The top level domain name of the URL. This is the top level domain name. For example, "com"                                                                                |
+| `{subdomain}`                    | The subdomain of the URL. This is the subdomain of the URL. For example, "www"                                                                                             |
+| `{quality}`                      | The image quality of the jpg image.                                                                                                                                        |
+| `{size}`                         | The name of the size. Set with the `key` value in a size object. If it's not set then the value will be the width and height separated by an "x". For example, `1300x800`. |
+| `{path}` or `{stub}`             | The URL path. This would be the part of the URL after the domain name.                                                                                                     |
+| `{url}`                          | The filename friendly version of the URL.                                                                                                                                  |
+| `{urlNoWww}`                     | The filename friendly version of the URL without the "www." prefix.                                                                                                        |
+| `{width}`                        | The width of the screenshot.                                                                                                                                               |
 
 The default file name format is `{urlNoWww}-{width}`.
 

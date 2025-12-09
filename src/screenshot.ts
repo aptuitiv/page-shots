@@ -18,6 +18,7 @@ import AdblockerPluginModule from 'puppeteer-extra-plugin-adblocker';
 import type { PluginOptions } from 'puppeteer-extra-plugin-adblocker';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import { setTimeout } from 'node:timers/promises';
+import { parse } from 'tldts';
 
 // Library
 import { logError, logInfo, logMessage, logSuccess } from './lib/log.js';
@@ -53,13 +54,13 @@ type SizeData = SizeConfig & {
 };
 
 /**
- * Cleans the path by removing the leading "/" and replacing periods with "-" and double "-" with a single "-".
+ * Cleans the url by removing the leading "/" and replacing periods with "-" and double "-" with a single "-".
  *
- * @param {string} path The path to clean
- * @returns {string} The cleaned path
+ * @param {string} value The value to clean
+ * @returns {string} The cleaned value
  */
-const cleanUrlPath = (path: string): string => {
-    let returnValue = path;
+const cleanUrl = (value: string): string => {
+    let returnValue = value;
     if (returnValue.startsWith('/')) {
         returnValue = returnValue.substring(1);
     }
@@ -90,16 +91,24 @@ const cleanUrlPath = (path: string): string => {
  */
 const formatFileName = (url: UrlData | SizeData, name: string): string => {
     const urlObject = new URL(url.url);
+    const tldtsResult = parse(url.url);
 
     // Set up the "url" portion of the name
     let urlName = `${urlObject.hostname}${urlObject.pathname}`;
-    urlName = cleanUrlPath(urlName);
+    urlName = cleanUrl(urlName);
 
     // Get the URL without the "www." prefix
     const urlNoWww = urlName.replace(/^www-/, '').replace(/^www\./, '');
 
-    const hostName = cleanUrlPath(urlObject.hostname);
+    // Get the hostname
+    const hostName = cleanUrl(urlObject.hostname);
     const hostNameNoWww = hostName.replace(/^www-/, '').replace(/^www\./, '');
+
+    // Get the domain name parts
+    const domainName = cleanUrl(tldtsResult.domain);
+    const secondLevelDomain = cleanUrl(tldtsResult.domainWithoutSuffix);
+    const topLevelDomain = cleanUrl(tldtsResult.publicSuffix);
+    const subdomain = cleanUrl(tldtsResult.subdomain);
 
     // Get the URL path/stub
     let path = urlObject.pathname;
@@ -109,7 +118,7 @@ const formatFileName = (url: UrlData | SizeData, name: string): string => {
         if (path.startsWith('/')) {
             path = path.substring(1);
         }
-        path = cleanUrlPath(path);
+        path = cleanUrl(path);
     }
 
     // Set up the "full/fit" portion of the name
@@ -126,6 +135,16 @@ const formatFileName = (url: UrlData | SizeData, name: string): string => {
     returnValue = returnValue.replace(/{urlNoWww}/g, urlNoWww);
     returnValue = returnValue.replace(/{hostname}/g, hostName);
     returnValue = returnValue.replace(/{hostnameNoWww}/g, hostNameNoWww);
+    returnValue = returnValue.replace(/{domain}/g, domainName);
+    returnValue = returnValue.replace(
+        /{(secondLevelDomain|sld)}/g,
+        secondLevelDomain
+    );
+    returnValue = returnValue.replace(
+        /{(topLevelDomain|tld)}/g,
+        topLevelDomain
+    );
+    returnValue = returnValue.replace(/{subdomain}/g, subdomain);
     returnValue = returnValue.replace(/{(path|stub)}/g, path);
     returnValue = returnValue.replace(/{width}/g, url.width.toString());
     returnValue = returnValue.replace(/{height}/g, url.height.toString());

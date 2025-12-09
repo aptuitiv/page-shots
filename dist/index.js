@@ -653,6 +653,7 @@ import puppeteerExtraModule from "puppeteer-extra";
 import AdblockerPluginModule from "puppeteer-extra-plugin-adblocker";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import { setTimeout as setTimeout2 } from "timers/promises";
+import { parse } from "tldts";
 
 // src/lib/time.ts
 function getStartTime() {
@@ -797,8 +798,8 @@ var full_page_screenshot_default = getFullPageScreenshot;
 // src/screenshot.ts
 var puppeteerExtra = puppeteerExtraModule;
 var AdblockerPlugin = AdblockerPluginModule;
-var cleanUrlPath = (path2) => {
-  let returnValue = path2;
+var cleanUrl = (value) => {
+  let returnValue = value;
   if (returnValue.startsWith("/")) {
     returnValue = returnValue.substring(1);
   }
@@ -815,11 +816,16 @@ var cleanUrlPath = (path2) => {
 };
 var formatFileName = (url, name) => {
   const urlObject = new URL(url.url);
+  const tldtsResult = parse(url.url);
   let urlName = `${urlObject.hostname}${urlObject.pathname}`;
-  urlName = cleanUrlPath(urlName);
+  urlName = cleanUrl(urlName);
   const urlNoWww = urlName.replace(/^www-/, "").replace(/^www\./, "");
-  const hostName = cleanUrlPath(urlObject.hostname);
+  const hostName = cleanUrl(urlObject.hostname);
   const hostNameNoWww = hostName.replace(/^www-/, "").replace(/^www\./, "");
+  const domainName = cleanUrl(tldtsResult.domain);
+  const secondLevelDomain = cleanUrl(tldtsResult.domainWithoutSuffix);
+  const topLevelDomain = cleanUrl(tldtsResult.publicSuffix);
+  const subdomain = cleanUrl(tldtsResult.subdomain);
   let path2 = urlObject.pathname;
   if (path2 === "/" || path2.length === 0) {
     path2 = "home";
@@ -827,7 +833,7 @@ var formatFileName = (url, name) => {
     if (path2.startsWith("/")) {
       path2 = path2.substring(1);
     }
-    path2 = cleanUrlPath(path2);
+    path2 = cleanUrl(path2);
   }
   let full = "full", fit = "fit";
   if (url.fullScreen) {
@@ -839,6 +845,16 @@ var formatFileName = (url, name) => {
   returnValue = returnValue.replace(/{urlNoWww}/g, urlNoWww);
   returnValue = returnValue.replace(/{hostname}/g, hostName);
   returnValue = returnValue.replace(/{hostnameNoWww}/g, hostNameNoWww);
+  returnValue = returnValue.replace(/{domain}/g, domainName);
+  returnValue = returnValue.replace(
+    /{(secondLevelDomain|sld)}/g,
+    secondLevelDomain
+  );
+  returnValue = returnValue.replace(
+    /{(topLevelDomain|tld)}/g,
+    topLevelDomain
+  );
+  returnValue = returnValue.replace(/{subdomain}/g, subdomain);
   returnValue = returnValue.replace(/{(path|stub)}/g, path2);
   returnValue = returnValue.replace(/{width}/g, url.width.toString());
   returnValue = returnValue.replace(/{height}/g, url.height.toString());
