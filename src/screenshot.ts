@@ -195,9 +195,7 @@ const getScreenshot = async (page: Page, url: UrlData) => {
         logSuccess(`Saved ${url.path}`);
     } catch (err) {
         logError('Error while taking the screenshot', err);
-        return null;
     }
-    return null;
 };
 
 /**
