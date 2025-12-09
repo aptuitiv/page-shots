@@ -53,6 +53,29 @@ type SizeData = SizeConfig & {
 };
 
 /**
+ * Cleans the path by removing the leading "/" and replacing periods with "-" and double "-" with a single "-".
+ *
+ * @param {string} path The path to clean
+ * @returns {string} The cleaned path
+ */
+const cleanUrlPath = (path: string): string => {
+    let returnValue = path;
+    if (returnValue.startsWith('/')) {
+        returnValue = returnValue.substring(1);
+    }
+    returnValue = sanitize(returnValue, { replacement: '-' });
+    returnValue = returnValue.replace(/\.+/g, '-');
+    returnValue = returnValue.replace(/-{2,}/g, '-');
+    if (returnValue.substring(returnValue.length - 1) === '-') {
+        returnValue = returnValue.substring(0, returnValue.length - 1);
+    }
+    if (returnValue.substring(0, 1) === '-') {
+        returnValue = returnValue.substring(1);
+    }
+    return returnValue;
+};
+
+/**
  * Formats the file name by replacing placeholders with values
  *
  * Supported placeholders:
@@ -66,40 +89,24 @@ type SizeData = SizeConfig & {
  * @returns {string} The formatted file name
  */
 const formatFileName = (url: UrlData | SizeData, name: string): string => {
+    const urlObject = new URL(url.url);
+
     // Set up the "url" portion of the name
-    let urlName = url.url.replace(/http(s?):\/\//, '');
-    urlName = sanitize(urlName, { replacement: '-' });
-    urlName = urlName.replace(/\.+/g, '-');
-    urlName = urlName.replace(/-{2,}/g, '-');
-    if (urlName.substring(urlName.length - 1) === '-') {
-        urlName = urlName.substring(0, urlName.length - 1);
-    }
-    if (urlName.substring(0, 1) === '-') {
-        urlName = urlName.substring(1);
-    }
+    let urlName = `${urlObject.hostname}${urlObject.pathname}`;
+    urlName = cleanUrlPath(urlName);
 
     // Get the URL without the "www." prefix
-    const urlNoWww = urlName.replace(/^www-/, '');
+    const urlNoWww = urlName.replace(/^www-/, '').replace(/^www\./, '');
 
     // Get the URL path/stub
-    let path = url.url.replace(/http(s?):\/\//, '');
-    const pathParts = path.split('/');
-    path = path.replace(pathParts[0], '').trim();
+    let path = urlObject.pathname;
     if (path === '/' || path.length === 0) {
         path = 'home';
     } else {
-        if (path.substring(0, 1) === '/') {
+        if (path.startsWith('/')) {
             path = path.substring(1);
         }
-        path = sanitize(path, { replacement: '-' });
-        path = path.replace(/\.+/g, '-');
-        path = path.replace(/-{2,}/g, '-');
-        if (path.substring(path.length - 1) === '-') {
-            path = path.substring(0, path.length - 1);
-        }
-        if (path.substring(0, 1) === '-') {
-            path = path.substring(1);
-        }
+        path = cleanUrlPath(path);
     }
 
     // Set up the "full/fit" portion of the name
