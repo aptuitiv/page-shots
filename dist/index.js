@@ -671,7 +671,7 @@ function getElapsedTime(startTime) {
 import fs2 from "fs-extra";
 import sharp from "sharp";
 import { setTimeout } from "timers/promises";
-async function stitchImages(scrBuffers, width, extraHeight) {
+var stitchImages = async (scrBuffers, width, extraHeight) => {
   const numBuffers = scrBuffers.length;
   const sharpImages = await Promise.all(
     scrBuffers.map((buf, index) => {
@@ -705,7 +705,7 @@ async function stitchImages(scrBuffers, width, extraHeight) {
     });
     offset += img.info.height;
   }
-  return await sharp({
+  return sharp({
     create: {
       width,
       height: totalHeight,
@@ -713,8 +713,8 @@ async function stitchImages(scrBuffers, width, extraHeight) {
       background: { r: 255, g: 255, b: 255, alpha: 0 }
     }
   }).composite(composites).png().toBuffer();
-}
-var getPageHeight = async (page) => await page.evaluate(() => document.documentElement.scrollHeight);
+};
+var getPageHeight = async (page) => page.evaluate(() => document.documentElement.scrollHeight);
 async function scrollDown(page) {
   await page.evaluate(() => {
     window.scrollBy({
@@ -724,7 +724,7 @@ async function scrollDown(page) {
     });
   });
 }
-var getPageSizeInfo = async (page) => await page.evaluate(() => {
+var getPageSizeInfo = async (page) => page.evaluate(() => {
   window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   const pageHeight = document.documentElement.scrollHeight;
   return {
@@ -770,14 +770,15 @@ var getFullPageScreenshot = async (page, screenshotConfig) => {
     if (fullHeight <= stitchThreshold) {
       await page.screenshot(screenshotConfig);
     } else {
-      screenshotConfig.captureBeyondViewport = false;
-      const { path: path2 } = screenshotConfig;
-      delete screenshotConfig.path;
-      delete screenshotConfig.fullPage;
+      const screenshotConf = { ...screenshotConfig };
+      screenshotConf.captureBeyondViewport = false;
+      const { path: path2 } = screenshotConf;
+      delete screenshotConf.path;
+      delete screenshotConf.fullPage;
       const sectionScreenshots = [];
       for (let index = 0; index < pageSizeInfo.pages; index += 1) {
         await setTimeout(100);
-        const screenshot = await page.screenshot(screenshotConfig);
+        const screenshot = await page.screenshot(screenshotConf);
         sectionScreenshots.push(screenshot);
         await scrollDown(page);
       }
@@ -791,7 +792,6 @@ var getFullPageScreenshot = async (page, screenshotConfig) => {
   } catch (err) {
     logError("Error while taking the full page screenshot", err);
   }
-  return null;
 };
 var full_page_screenshot_default = getFullPageScreenshot;
 
