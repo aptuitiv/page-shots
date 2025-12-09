@@ -396,14 +396,20 @@ export class ConfigParser {
             isBoolLike(this.configParam?.full)
         ) {
             let fullScreen: BoolLike = true;
-            if (isBoolLike(this.configParam?.fit)) {
-                fullScreen = this.configParam.fit;
-            } else if (isBoolLike(this.configParam?.fullscreen)) {
+            if (isBoolLike(this.configParam?.fullscreen)) {
                 fullScreen = this.configParam.fullscreen;
             } else if (isBoolLike(this.configParam?.fullScreen)) {
                 fullScreen = this.configParam.fullScreen;
             } else if (isBoolLike(this.configParam?.full)) {
                 fullScreen = this.configParam.full;
+            }
+            if (isBoolLike(this.configParam?.fit)) {
+                // Fit overrides full screen and it's the opposite of full screen.
+                if (isTrueLike(this.configParam.fit)) {
+                    fullScreen = false;
+                } else {
+                    fullScreen = true;
+                }
             }
             if (isTrueLike(fullScreen)) {
                 this.config.fullScreen = true;

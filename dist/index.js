@@ -326,14 +326,19 @@ var ConfigParser = class {
   #setFullScreen() {
     if (isBoolLike(this.configParam?.fit) || isBoolLike(this.configParam?.fullscreen) || isBoolLike(this.configParam?.fullScreen) || isBoolLike(this.configParam?.full)) {
       let fullScreen = true;
-      if (isBoolLike(this.configParam?.fit)) {
-        fullScreen = this.configParam.fit;
-      } else if (isBoolLike(this.configParam?.fullscreen)) {
+      if (isBoolLike(this.configParam?.fullscreen)) {
         fullScreen = this.configParam.fullscreen;
       } else if (isBoolLike(this.configParam?.fullScreen)) {
         fullScreen = this.configParam.fullScreen;
       } else if (isBoolLike(this.configParam?.full)) {
         fullScreen = this.configParam.full;
+      }
+      if (isBoolLike(this.configParam?.fit)) {
+        if (isTrueLike(this.configParam.fit)) {
+          fullScreen = false;
+        } else {
+          fullScreen = true;
+        }
       }
       if (isTrueLike(fullScreen)) {
         this.config.fullScreen = true;
@@ -713,7 +718,7 @@ var hideElements = async (page, selectors) => {
     promises.push(
       page.evaluate((sel) => {
         document.querySelectorAll(sel).forEach((element) => {
-          element.style.display = "none";
+          element.style.display = "none !important";
         });
       }, selector)
     );
@@ -1032,11 +1037,14 @@ var Screenshot = class {
   /**
    * Initialize the screenshot class
    *
+   * @param options
    * @returns {Promise<void>}
    */
-  async init() {
+  async init(options) {
     puppeteerExtra.use(StealthPlugin());
-    puppeteerExtra.use(AdblockerPlugin());
+    if (isTrueLike(options.blockAdsAndCookieNotices)) {
+      puppeteerExtra.use(AdblockerPlugin());
+    }
     this.#cluster = await Cluster.launch({
       concurrency: Cluster.CONCURRENCY_CONTEXT,
       maxConcurrency: 10,
@@ -1114,7 +1122,7 @@ var Screenshot = class {
 var screenshotHandler = async (options) => {
   const startTime = getStartTime();
   const screenshot = new Screenshot();
-  await screenshot.init();
+  await screenshot.init(options);
   let configFiles = [];
   if (Array.isArray(options.config)) {
     configFiles = options.config.map((config) => {
@@ -1179,6 +1187,10 @@ var program = new Command();
 program.version(thisPackageJson.version).description(thisPackageJson.description).option(
   "-b, --base <string>",
   "The base URL value. If set then the URL will be appended to this value."
+).option(
+  "--blockAdsAndCookieNotices <boolean>",
+  "Whether or not to block ads and cookie notices. This will block all ads and cookie notices on the page.",
+  true
 ).option("--clipH <integer>", "The height of clip area.").option("--clipW <integer>", "The width of clip area.").option(
   "--clipX <integer>",
   "The x-coordinate of top-left corner of clip area."
