@@ -254,7 +254,6 @@ const getFullPageScreenshot = async (
     } catch (err) {
         logError('Error while taking the full page screenshot', err);
     }
-    return null;
 };
 
 export default getFullPageScreenshot;
