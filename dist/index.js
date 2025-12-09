@@ -2,50 +2,12 @@
 
 // src/index.ts
 import { Command, Option } from "commander";
-import fs4 from "fs-extra";
+import fs3 from "fs-extra";
 import path from "path";
 import { fileURLToPath } from "url";
 
 // src/config.ts
-import fs from "fs-extra";
 import { extname } from "path";
-
-// src/lib/log.ts
-import chalk from "chalk";
-import fancyLog from "fancy-log";
-import logSymbols from "log-symbols";
-var logInfo = (message, additionalMessage) => {
-  if (additionalMessage) {
-    fancyLog(
-      logSymbols.info,
-      chalk.blue(message),
-      chalk.cyan(additionalMessage)
-    );
-  } else {
-    fancyLog(logSymbols.info, chalk.blue(message));
-  }
-};
-var logMessage = (message, additionalMessage) => {
-  fancyLog(chalk.cyan(message), additionalMessage ?? "");
-};
-var logSuccess = (message, additionalMessage) => {
-  if (additionalMessage) {
-    fancyLog(
-      logSymbols.success,
-      chalk.green(message),
-      chalk.cyan(additionalMessage)
-    );
-  } else {
-    fancyLog(logSymbols.success, chalk.green(message));
-  }
-};
-var logError = (message, error) => {
-  fancyLog(logSymbols.error, chalk.red(message));
-  if (error) {
-    fancyLog(chalk.red(error.message));
-    fancyLog(chalk.red(error.stack));
-  }
-};
 
 // src/lib/types.ts
 var isFalseLike = (thing) => ["n", "no", false, "false"].includes(thing);
@@ -169,9 +131,9 @@ var ConfigParser = class {
    * @param {Config|SizeConfig|UrlConfig} baseConfig The default configuration to use instead of the core default configuration
    */
   constructor(baseConfig) {
-    this.config = { ...defaultConfig };
+    this.config = structuredClone(defaultConfig);
     if (isObjectWithValues(baseConfig)) {
-      const baseConfigObject = { ...baseConfig };
+      const baseConfigObject = structuredClone(baseConfig);
       if (!Array.isArray(baseConfigObject.sizes)) {
         baseConfigObject.sizes = [];
       }
@@ -209,68 +171,30 @@ var ConfigParser = class {
    */
   parse(data) {
     if (isObjectWithValues(data)) {
-      this.#parseConfig(data);
-    }
-  }
-  /**
-   * Parse the JSON config file and merge it with the current config
-   *
-   * @param {string} file The name of the JSON config file to parse
-   */
-  #parseFile(file) {
-    try {
-      let configFile = "shots.json";
-      if (typeof file === "string" && file.length > 0) {
-        configFile = file;
-        const ext = extname(file).toLowerCase().replace(".", "");
-        if (ext.length === 0) {
-          configFile += ".json";
-        }
+      this.configParam = data;
+      this.#setBaseUrl();
+      this.#setClip();
+      this.#setDelay();
+      this.#setDeviceScaleFactor();
+      this.#setDir();
+      this.#setFileName();
+      this.#setFileType();
+      this.#setFullScreen();
+      this.#setHeight();
+      this.#setHideElement();
+      this.#setHideStitchElement();
+      this.#setQuality();
+      this.#setScrollDelay();
+      this.#setStitchThreshold();
+      if (this.processUrls) {
+        this.#setUrls();
       }
-      if (fs.existsSync(configFile)) {
-        this.#parseConfig(fs.readJsonSync(configFile));
-      } else {
-        logError(
-          `The JSON config file "${configFile}" could not be found`
-        );
+      if (this.processSizes) {
+        this.#setViewportSizes();
       }
-    } catch (err) {
-      logError(
-        `Error while processing the JSON config file ${file}`,
-        err
-      );
-      process.exit();
+      this.#setWaitUntil();
+      this.#setWidth();
     }
-  }
-  /**
-   * Parse the configuration data
-   *
-   * @param {ConfigParam} data The configuration data to parse
-   */
-  #parseConfig(data) {
-    this.configParam = data;
-    this.#setBaseUrl();
-    this.#setClip();
-    this.#setDelay();
-    this.#setDeviceScaleFactor();
-    this.#setDir();
-    this.#setFileName();
-    this.#setFileType();
-    this.#setFullScreen();
-    this.#setHeight();
-    this.#setHideElement();
-    this.#setHideStitchElement();
-    this.#setQuality();
-    this.#setScrollDelay();
-    this.#setStitchThreshold();
-    if (this.processUrls) {
-      this.#setUrls();
-    }
-    if (this.processSizes) {
-      this.#setViewportSizes();
-    }
-    this.#setWaitUntil();
-    this.#setWidth();
   }
   /**
    * Get the configuration
@@ -643,6 +567,43 @@ var ConfigParser = class {
   }
 };
 
+// src/lib/log.ts
+import chalk from "chalk";
+import fancyLog from "fancy-log";
+import logSymbols from "log-symbols";
+var logInfo = (message, additionalMessage) => {
+  if (additionalMessage) {
+    fancyLog(
+      logSymbols.info,
+      chalk.blue(message),
+      chalk.cyan(additionalMessage)
+    );
+  } else {
+    fancyLog(logSymbols.info, chalk.blue(message));
+  }
+};
+var logMessage = (message, additionalMessage) => {
+  fancyLog(chalk.cyan(message), additionalMessage ?? "");
+};
+var logSuccess = (message, additionalMessage) => {
+  if (additionalMessage) {
+    fancyLog(
+      logSymbols.success,
+      chalk.green(message),
+      chalk.cyan(additionalMessage)
+    );
+  } else {
+    fancyLog(logSymbols.success, chalk.green(message));
+  }
+};
+var logError = (message, error) => {
+  fancyLog(logSymbols.error, chalk.red(message));
+  if (error) {
+    fancyLog(chalk.red(error.message));
+    fancyLog(chalk.red(error.stack));
+  }
+};
+
 // src/init.ts
 import { createWriteStream } from "fs";
 import { extname as extname2, join } from "path";
@@ -716,7 +677,7 @@ var initJson = {
 var init_default = initJson;
 
 // src/screenshot.ts
-import fs3 from "fs-extra";
+import fs2 from "fs-extra";
 import { globSync } from "glob";
 import { dirname, extname as extname4 } from "path";
 import { Cluster } from "puppeteer-cluster";
@@ -738,7 +699,7 @@ function getElapsedTime(startTime) {
 }
 
 // src/full-page-screenshot.ts
-import fs2 from "fs-extra";
+import fs from "fs-extra";
 import sharp from "sharp";
 import { setTimeout } from "timers/promises";
 
@@ -987,7 +948,7 @@ var getFullPageScreenshot = async (page, url, screenshotConfig) => {
         pageSizeInfo.viewport.width,
         pageSizeInfo.extraHeight
       );
-      fs2.writeFileSync(path2, stitchedScreenshot);
+      fs.writeFileSync(path2, stitchedScreenshot);
     }
   } catch (err) {
     logError("Error while taking the full page screenshot", err);
@@ -1008,8 +969,8 @@ var getScreenshot = async (page, url) => {
   }
   logMessage(`Taking screenshot of ${url.url}`, message);
   const dir = dirname(url.path);
-  if (dir.length > 0 && !fs3.existsSync(dir)) {
-    fs3.mkdirSync(dir, { recursive: true });
+  if (dir.length > 0 && !fs2.existsSync(dir)) {
+    fs2.mkdirSync(dir, { recursive: true });
   }
   await page.setViewport({
     deviceScaleFactor: url.deviceScaleFactor,
@@ -1059,17 +1020,10 @@ var Screenshot = class {
    */
   #cluster;
   /**
-   * Holds the config parser object
-   *
-   * @type {ConfigParser}
-   */
-  #configParser;
-  /**
    * Constructor
    */
   constructor() {
     this.#cluster = null;
-    this.#configParser = new ConfigParser();
   }
   /**
    * Initialize the screenshot class
@@ -1085,21 +1039,20 @@ var Screenshot = class {
       puppeteer: puppeteerExtra
     });
     await this.#cluster.task(async ({ page, data: url }) => {
-      console.log("Getting screenshot for: ", url.url);
       await getScreenshot(page, url);
     });
   }
+  /**
+   * Process the configuration options
+   *
+   * @param {ConfigParam} options The configuration options to process. They can come from the command line arguments or a JSON config file.
+   * @returns {Promise<void>}
+   */
   async processOptions(options) {
-    console.log("Processing options: ", options);
-    this.#configParser.parse(options);
-    if (this.#configParser.hasUrls()) {
-      this.getScreenshots(this.#configParser.getConfig()).then(() => {
-        logSuccess(
-          "End of Config: All screenshots have been taken."
-        );
-      }).catch((err) => {
-        logError("Error getting screenshots: ", err);
-      });
+    const configParser = new ConfigParser();
+    configParser.parse(options);
+    if (configParser.hasUrls()) {
+      this.getScreenshots(configParser.getConfig());
     } else {
       logError(
         "No URLs were provided to get screenshots of. Nothing to do."
@@ -1113,12 +1066,10 @@ var Screenshot = class {
    * @returns {Promise<void>}
    */
   async getScreenshots(config) {
-    console.log("getScreenshotsConfig: ", config);
     try {
       logMessage(
         `Getting screenshot${config.urls.length === 1 ? "" : "s"} for ${config.urls.length} URL${config.urls.length === 1 ? "" : "s"}.`
       );
-      console.log("Getting screenshots for: ", config.urls);
       for (const url of config.urls) {
         const urlObject = setupUrl(url, config);
         if (urlObject.sizes.length > 0) {
@@ -1159,9 +1110,7 @@ var screenshotHandler = async (options) => {
   let configFiles = [];
   if (Array.isArray(options.config)) {
     configFiles = options.config.map((config) => globSync(config)).flat();
-    console.log("Config files: ", options.config, configFiles);
   }
-  console.log("configFiles: ", configFiles);
   const promises = [];
   if (configFiles.length > 0) {
     configFiles.forEach(async (file) => {
@@ -1174,11 +1123,11 @@ var screenshotHandler = async (options) => {
             configFile += ".json";
           }
         }
-        if (fs3.existsSync(configFile)) {
-          console.log("Processing config file: ", configFile);
-          promises.push(() => {
-            screenshot.processOptions(fs3.readJsonSync(configFile));
-          });
+        if (fs2.existsSync(configFile)) {
+          logMessage(`Processing config file: ${configFile}`);
+          promises.push(
+            screenshot.processOptions(fs2.readJsonSync(configFile))
+          );
         } else {
           logError(
             `The JSON config file "${configFile}" could not be found`
@@ -1193,24 +1142,18 @@ var screenshotHandler = async (options) => {
       }
     });
   } else {
-    promises.push(() => {
-      screenshot.processOptions(options);
-    });
+    promises.push(screenshot.processOptions(options));
   }
-  console.log("promises: ", promises);
   await Promise.all(promises);
-  console.log("All screenshots have been taken.");
-  console.log("Ending screenshots.");
   await screenshot.end();
   const time = getElapsedTime(startTime);
   logMessage(`Total time to get screenshots: ${time}s`);
-  console.log("Screenshots ended.");
 };
 var screenshot_default = screenshotHandler;
 
 // src/index.ts
 var __dirname = path.dirname(fileURLToPath(import.meta.url));
-var thisPackageJson = fs4.readJsonSync(
+var thisPackageJson = fs3.readJsonSync(
   path.resolve(__dirname, "../package.json")
 );
 var program = new Command();
@@ -1293,7 +1236,7 @@ program.version(thisPackageJson.version).description(thisPackageJson.description
   'Set the image type for screenshots to be "webp". Alternate method to using -t.'
 ).action(async (options) => {
   await screenshot_default(options);
-  logSuccess("END OF SCRIPT: All screenshots have been taken.");
+  logSuccess("All screenshots have been taken.");
 });
 program.addHelpText(
   "after",
