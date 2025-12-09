@@ -763,6 +763,7 @@ var formatFileName = (url, name) => {
   } else {
     full = "fit";
   }
+  const date = /* @__PURE__ */ new Date();
   let returnValue = name.replace(/{url}/g, urlName);
   returnValue = returnValue.replace(/{urlNoWww}/g, urlNoWww);
   returnValue = returnValue.replace(/{hostname}/g, hostName);
@@ -784,6 +785,9 @@ var formatFileName = (url, name) => {
   returnValue = returnValue.replace(/{full}/g, full);
   returnValue = returnValue.replace(/{fit}/g, fit);
   returnValue = returnValue.replace(/{size}/g, `${url.width}x${url.height}`);
+  returnValue = returnValue.replace(/{month}/g, date.getMonth().toString());
+  returnValue = returnValue.replace(/{day}/g, date.getDate().toString());
+  returnValue = returnValue.replace(/{year}/g, date.getFullYear().toString());
   return returnValue;
 };
 var getUrlPath = (url) => {

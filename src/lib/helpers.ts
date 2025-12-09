@@ -119,6 +119,8 @@ const formatFileName = (url: UrlData | SizeData, name: string): string => {
         full = 'fit';
     }
 
+    const date = new Date();
+
     // Format the name
     let returnValue = name.replace(/{url}/g, urlName);
     returnValue = returnValue.replace(/{urlNoWww}/g, urlNoWww);
@@ -141,7 +143,9 @@ const formatFileName = (url: UrlData | SizeData, name: string): string => {
     returnValue = returnValue.replace(/{full}/g, full);
     returnValue = returnValue.replace(/{fit}/g, fit);
     returnValue = returnValue.replace(/{size}/g, `${url.width}x${url.height}`);
-
+    returnValue = returnValue.replace(/{month}/g, date.getMonth().toString());
+    returnValue = returnValue.replace(/{day}/g, date.getDate().toString());
+    returnValue = returnValue.replace(/{year}/g, date.getFullYear().toString());
     return returnValue;
 };
 
