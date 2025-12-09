@@ -91,6 +91,9 @@ var defaultConfig = {
   nameFormat: "{urlNoWww}-{width}",
   // The image quality if the screenshot is a jpg
   quality: 100,
+  // The number of milliseconds to delay after each scroll to allow the content to load.
+  // This is used to allow time for lazy loading of images or animations that are triggered by the scroll to complete.
+  scrollDelay: 400,
   // Holds one or more viewport sizes to get the screenshot in
   sizes: [],
   // The list of URLs to get screenshots for
@@ -257,6 +260,7 @@ var ConfigParser = class {
     this.#setFullScreen();
     this.#setHeight();
     this.#setQuality();
+    this.#setScrollDelay();
     if (this.processUrls) {
       this.#setUrls();
     }
@@ -440,6 +444,22 @@ var ConfigParser = class {
       const quality = parseInt(this.configParam.quality.toString(), 10);
       if (quality > 0 && quality <= 100) {
         this.config.quality = quality;
+      }
+    }
+  }
+  /**
+   * Sets the number of milliseconds to delay after each scroll to allow the content to load.
+   *
+   * This is used to allow time for lazy loading of images or animations that are triggered by the scroll to complete.
+   */
+  #setScrollDelay() {
+    if (isNumberOrNumberString(this.configParam?.scrollDelay)) {
+      const scrollDelay = parseInt(
+        this.configParam.scrollDelay.toString(),
+        10
+      );
+      if (scrollDelay > 0) {
+        this.config.scrollDelay = scrollDelay;
       }
     }
   }
@@ -737,7 +757,7 @@ var getPageSizeInfo = async (page) => page.evaluate(() => {
     }
   };
 });
-var getFullPageScreenshot = async (page, screenshotConfig) => {
+var getFullPageScreenshot = async (page, url, screenshotConfig) => {
   const maxScrollLoops = 50;
   const stitchThreshold = 16e3;
   try {
@@ -751,7 +771,7 @@ var getFullPageScreenshot = async (page, screenshotConfig) => {
     let sameHeightCount = 0;
     for (let index = 0; index < maxScrollLoops; index += 1) {
       await scrollDown(page);
-      await setTimeout(400);
+      await setTimeout(url.scrollDelay);
       const newHeight = await getPageHeight(page);
       if (newHeight === lastHeight) {
         sameHeightCount++;
@@ -905,7 +925,7 @@ var getScreenshot = async (page, url) => {
       screenshotConfig.clip = url.clip;
     }
     if (screenshotConfig.fullPage) {
-      await full_page_screenshot_default(page, screenshotConfig);
+      await full_page_screenshot_default(page, url, screenshotConfig);
     } else {
       await page.screenshot(screenshotConfig);
     }
@@ -1057,6 +1077,10 @@ program.version(thisPackageJson.version).description(thisPackageJson.description
   "-s, --size <string...>",
   'A viewport size to capture the screenshot in. The format is WIDTHxHEIGHT. For example, 800x400 for a width of 800px and a height of 400px. Use "--fit" if you want the screenshot to only capture the viewport width and height.',
   []
+).option(
+  "--scrollDelay <integer>",
+  "The number of milliseconds to delay after each scroll to allow the content to load. This is used to allow time for lazy loading of images or animations that are triggered by the scroll to complete.",
+  "400"
 ).addOption(
   new Option(
     "-t, --type <string>",

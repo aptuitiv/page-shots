@@ -90,6 +90,11 @@ program
         'A viewport size to capture the screenshot in. The format is WIDTHxHEIGHT. For example, 800x400 for a width of 800px and a height of 400px. Use "--fit" if you want the screenshot to only capture the viewport width and height.',
         []
     )
+    .option(
+        '--scrollDelay <integer>',
+        'The number of milliseconds to delay after each scroll to allow the content to load. This is used to allow time for lazy loading of images or animations that are triggered by the scroll to complete.',
+        '400'
+    )
     .addOption(
         new Option(
             '-t, --type <string>',

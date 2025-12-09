@@ -9,6 +9,7 @@ import sharp from 'sharp';
 import { ConsoleMessage, Page, type ScreenshotOptions } from 'puppeteer';
 import { setTimeout } from 'node:timers/promises';
 import { logError, logMessage } from './lib/log.js';
+import { type UrlData } from './types.js';
 
 type PageSizeInfo = {
     pages: number;
@@ -145,10 +146,12 @@ const getPageSizeInfo = async (page: Page): Promise<PageSizeInfo> =>
  * - Falls back to stitched images if fullPage capture is unreliable
  *
  * @param {Page} page The page object
+ * @param {UrlData} url The URL data object
  * @param {ScreenshotOptions} screenshotConfig The screenshot configuration
  */
 const getFullPageScreenshot = async (
     page: Page,
+    url: UrlData,
     screenshotConfig: ScreenshotOptions
 ) => {
     // Maximum number of scroll loops to perform.
@@ -186,7 +189,7 @@ const getFullPageScreenshot = async (
             // eslint-disable-next-line no-await-in-loop -- Must scroll sequentially to trigger lazy loading
             await scrollDown(page);
             // eslint-disable-next-line no-await-in-loop -- Delay after scroll to allow content to load
-            await setTimeout(400);
+            await setTimeout(url.scrollDelay);
 
             // Get the new page height and compare it to the last height.
             // If the height stabilizes for several loops, stop scrolling.

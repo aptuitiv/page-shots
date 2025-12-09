@@ -24,13 +24,13 @@ import { parse } from 'tldts';
 import { logError, logInfo, logMessage, logSuccess } from './lib/log.js';
 import { getElapsedTime, getStartTime } from './lib/time.js';
 import { isStringWithValue } from './lib/types.js';
+import { ConfigParser } from './config.js';
 import {
     type Config,
-    type SizeConfig,
-    type UrlConfig,
+    type SizeData,
+    type UrlData,
     type UrlParamObject,
-    ConfigParser,
-} from './config.js';
+} from './types.js';
 import getFullPageScreenshot from './full-page-screenshot.js';
 
 // This is a workaround to get the type for the puppeteer-extra module
@@ -41,17 +41,6 @@ const puppeteerExtra = puppeteerExtraModule as unknown as PuppeteerExtra;
 const AdblockerPlugin = AdblockerPluginModule as unknown as (
     options?: Partial<PluginOptions>
 ) => import('puppeteer-extra-plugin-adblocker').PuppeteerExtraPluginAdblocker;
-
-// The URL data object after it has been set up
-type UrlData = UrlConfig & {
-    path: string;
-};
-
-// The size data object after it has been set up
-type SizeData = SizeConfig & {
-    path: string;
-    url: string;
-};
 
 /**
  * Cleans the url by removing the leading "/" and replacing periods with "-" and double "-" with a single "-".
@@ -219,7 +208,7 @@ const getScreenshot = async (page: Page, url: UrlData) => {
         }
 
         if (screenshotConfig.fullPage) {
-            await getFullPageScreenshot(page, screenshotConfig);
+            await getFullPageScreenshot(page, url, screenshotConfig);
         } else {
             await page.screenshot(screenshotConfig);
         }
