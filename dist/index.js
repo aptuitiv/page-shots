@@ -604,8 +604,12 @@ var logSuccess = (message, additionalMessage) => {
 var logError = (message, error) => {
   fancyLog(logSymbols.error, chalk.red(message));
   if (error) {
-    fancyLog(chalk.red(error.message));
-    fancyLog(chalk.red(error.stack));
+    if (error instanceof Error) {
+      fancyLog(chalk.red(error.message));
+      fancyLog(chalk.red(error.stack));
+    } else {
+      fancyLog(chalk.red(error));
+    }
   }
 };
 
@@ -1037,7 +1041,7 @@ var Screenshot = class {
   /**
    * Initialize the screenshot class
    *
-   * @param options
+   * @param {ConfigParam} options The configuration options to initialize the screenshot class with.
    * @returns {Promise<void>}
    */
   async init(options) {
@@ -1058,21 +1062,53 @@ var Screenshot = class {
    * Process the configuration options
    *
    * @param {ConfigParam} options The configuration options to process. They can come from the command line arguments.
+   * @param {ConfigParam} [optionsWithoutDefaults] The configuration options to process. These come from the command line arguments but without the default values.
    * @param {ConfigParam} [configFileOptions] The configuration options to process from a JSON config file.
    * @returns {Promise<void>}
    */
-  async processOptions(options, configFileOptions) {
+  async processOptions(options, optionsWithoutDefaults, configFileOptions) {
     const configParser = new ConfigParser();
+    configParser.parse(options);
     if (isObjectWithValues(configFileOptions)) {
       configParser.parse(configFileOptions);
+      if (isObjectWithValues(optionsWithoutDefaults)) {
+        configParser.parse(optionsWithoutDefaults);
+      }
     }
-    configParser.parse(options);
     if (configParser.hasUrls()) {
       this.getScreenshots(configParser.getConfig());
     } else {
-      logError(
-        "No URLs were provided to get screenshots of. Nothing to do."
-      );
+      if (!isDefined(configFileOptions)) {
+        if (fs2.existsSync("shots.json")) {
+          try {
+            configParser.parse(fs2.readJsonSync("shots.json"));
+          } catch (err) {
+            logError(
+              'Error while reading the default "shots.json" file',
+              err.message
+            );
+            process.exit(1);
+          }
+          if (configParser.hasUrls()) {
+            this.getScreenshots(configParser.getConfig());
+          } else {
+            logError(
+              'No URLs were provided to get screenshots of. The default "shots.json" file does not contain any URLs. Nothing to do.'
+            );
+            process.exit(1);
+          }
+        } else {
+          logError(
+            'No URLs were provided to get screenshots of. No JSON config file was provided and the default "shots.json" file does not exist. Nothing to do.'
+          );
+          process.exit(1);
+        }
+      } else {
+        logError(
+          "No URLs were provided to get screenshots of. Nothing to do."
+        );
+        process.exit(1);
+      }
     }
   }
   /**
@@ -1119,7 +1155,7 @@ var Screenshot = class {
     await this.#cluster.close();
   }
 };
-var screenshotHandler = async (options) => {
+var screenshotHandler = async (options, optionsWithoutDefaults) => {
   const startTime = getStartTime();
   const screenshot = new Screenshot();
   await screenshot.init(options);
@@ -1149,12 +1185,21 @@ var screenshotHandler = async (options) => {
         }
         if (fs2.existsSync(configFile)) {
           logMessage(`Processing config file: ${configFile}`);
-          promises.push(
-            screenshot.processOptions(
-              options,
-              fs2.readJsonSync(configFile)
-            )
-          );
+          try {
+            promises.push(
+              screenshot.processOptions(
+                options,
+                optionsWithoutDefaults,
+                fs2.readJsonSync(configFile)
+              )
+            );
+          } catch (err) {
+            logError(
+              `Error while reading the JSON config file ${configFile}`,
+              err.message
+            );
+            process.exit(1);
+          }
         } else {
           logError(
             `The JSON config file "${configFile}" could not be found`
@@ -1266,7 +1311,15 @@ program.version(thisPackageJson.version).description(thisPackageJson.description
   "--webp",
   'Set the image type for screenshots to be "webp". Alternate method to using -t.'
 ).action(async (options) => {
-  await screenshot_default(options);
+  const allOptions = options;
+  const optionsWithoutDefaults = { ...options };
+  Object.keys(optionsWithoutDefaults).forEach((key) => {
+    const source = program.getOptionValueSource(key);
+    if (source === "default") {
+      delete optionsWithoutDefaults[key];
+    }
+  });
+  await screenshot_default(allOptions, optionsWithoutDefaults);
   logSuccess("All screenshots have been taken.");
 });
 program.addHelpText(
