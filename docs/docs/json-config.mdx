@@ -5,6 +5,10 @@ title: JSON Configuration
 Instead of specifying the URLs to get sreenshots for and their configuration through the [command line options](/command-line) you can do all of that in JSON file.
 This is the recommended method if you are getting screenshots for multiple URLs at one time.
 
+:::tip
+If you use [command line options](/command-line) then they will override the JSON config file options.
+:::
+
 Below is an example JSON file:
 
 ```json
@@ -21,9 +25,11 @@ Below is an example JSON file:
 
 The above specifies 3 URLs to get screenshots for and 3 different viewport sizes to save each screenshot as.
 
-> **NOTE: The contents of the JSON file needs to be valid JSON. Use double quotes instead of single quotes.**
+:::warning
+The contents of the JSON file needs to be valid JSON. Use double quotes instead of single quotes.
 
 Validate your JSON at [jsonlint.com](https://jsonlint.com/) if you're having any troubles.
+:::
 
 ## JSON options
 
@@ -102,9 +108,9 @@ There are two ways to use the JSON configuration file.
 1. Simply run `page-shots` on the command line with no arguments. In this case the program will look for a file called `shots.json` in the current directory.
 2. Specify the name of the JSON file to use.
 
-### Specify the name of the JSON file to use
+### Specify the name of the JSON configuration file to use
 
-Use the `-c` or `--config` argument to specify the JSON config file to use. If you use this argument any other arguments are ignored.
+Use the `-c` or `--config` argument to specify the JSON config file to use.
 
 ```
 page-shots -c myfile.json
@@ -114,6 +120,24 @@ When specifying the name of the JSON config file you don't have to include the `
 
 ```
 page-shots -c myfile
+```
+
+You can specify multiple JSON config files to use by passing in multiple file names.
+
+```
+page-shots -c myfile.json -c myfile2.json
+```
+
+You can also use a glob pattern to specify the JSON files to use.
+
+```
+page-shots -c myfile*.json
+```
+
+You can also process all of the JSON files in the current directory by passing in a wildcard.
+
+```
+page-shots -c *.json
 ```
 
 ## Sample JSON
