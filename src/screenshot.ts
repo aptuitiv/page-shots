@@ -331,13 +331,21 @@ const screenshotHandler = async (
                 }
                 if (fs.existsSync(configFile)) {
                     logMessage(`Processing config file: ${configFile}`);
-                    promises.push(
-                        screenshot.processOptions(
-                            options,
-                            optionsWithoutDefaults,
-                            fs.readJsonSync(configFile)
-                        )
-                    );
+                    try {
+                        promises.push(
+                            screenshot.processOptions(
+                                options,
+                                optionsWithoutDefaults,
+                                fs.readJsonSync(configFile)
+                            )
+                        );
+                    } catch (err) {
+                        logError(
+                            `Error while reading the JSON config file ${configFile}`,
+                            err.message
+                        );
+                        process.exit(1);
+                    }
                 } else {
                     logError(
                         `The JSON config file "${configFile}" could not be found`
