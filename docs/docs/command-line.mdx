@@ -78,6 +78,13 @@ You can also process all of the JSON files in the current directory by passing i
 page-shots -c *.json
 ```
 
+The default name for the JSON config file is `shots.json`. If the JSON file exists in the current directory and it's called `shots.json` then you don't have to specify the file name. If no URLs are provided to get screenshots of then the program will look for the `shots.json` file in the current directory and use it if it exists.
+This allows you to just call `page-shots` on the command line and it will use the `shots.json` file in the current directory if it exists.
+
+```
+page-shots
+```
+
 ### Get a screenshot of just one URL and output it in the same directory.
 
 ```
