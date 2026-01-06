@@ -128,13 +128,17 @@ export const logConditionalWarning = (outputLog: boolean, message: string) => {
  * Log an error message
  *
  * @param {string} message The message to output
- * @param {Error} [error] The error to output
+ * @param {Error|string} [error] The error to output. Either the error object or a string message.
  */
-export const logError = (message: string, error?: Error) => {
+export const logError = (message: string, error?: Error | string) => {
     fancyLog(logSymbols.error, chalk.red(message));
     if (error) {
-        fancyLog(chalk.red(error.message));
-        fancyLog(chalk.red(error.stack));
+        if (error instanceof Error) {
+            fancyLog(chalk.red(error.message));
+            fancyLog(chalk.red(error.stack));
+        } else {
+            fancyLog(chalk.red(error));
+        }
     }
 };
 
