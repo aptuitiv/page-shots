@@ -33,6 +33,7 @@ import {
 import getFullPageScreenshot from './full-page-screenshot.js';
 import { hideElements, getUrlPath, setupUrl } from './lib/helpers.js';
 import {
+    isDefined,
     isObjectWithValues,
     isStringWithValue,
     isTrueLike,
@@ -213,9 +214,41 @@ class Screenshot {
         if (configParser.hasUrls()) {
             this.getScreenshots(configParser.getConfig());
         } else {
-            logError(
-                'No URLs were provided to get screenshots of. Nothing to do.'
-            );
+            if (!isDefined(configFileOptions)) {
+                // A JSON config file was not provided. See if the default "shots.json" file exists.
+                if (fs.existsSync('shots.json')) {
+                    // The default "shots.json" file exists. Read it and parse the configuration options.
+                    try {
+                        configParser.parse(fs.readJsonSync('shots.json'));
+                    } catch (err) {
+                        logError(
+                            'Error while reading the default "shots.json" file',
+                            err.message
+                        );
+                        process.exit(1);
+                    }
+                    if (configParser.hasUrls()) {
+                        this.getScreenshots(configParser.getConfig());
+                    } else {
+                        logError(
+                            'No URLs were provided to get screenshots of. The default "shots.json" file does not contain any URLs. Nothing to do.'
+                        );
+                        process.exit(1);
+                    }
+                } else {
+                    // The default "shots.json" file does not exist. Output an error message.
+                    logError(
+                        'No URLs were provided to get screenshots of. No JSON config file was provided and the default "shots.json" file does not exist. Nothing to do.'
+                    );
+                    process.exit(1);
+                }
+            } else {
+                // A JSON config file was provided but no URLs were provided.
+                logError(
+                    'No URLs were provided to get screenshots of. Nothing to do.'
+                );
+                process.exit(1);
+            }
         }
     }
 
