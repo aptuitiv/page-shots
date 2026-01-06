@@ -138,7 +138,18 @@ program
         'Set the image type for screenshots to be "webp". Alternate method to using -t.'
     )
     .action(async (options) => {
-        await screenshotHandler(options);
+        const allOptions = options;
+        // Get the command line arguments
+        const optionsWithoutDefaults = { ...options };
+        // Remove the default values from the command line arguments.
+        Object.keys(optionsWithoutDefaults).forEach((key) => {
+            const source = program.getOptionValueSource(key);
+            if (source === 'default') {
+                delete optionsWithoutDefaults[key];
+            }
+        });
+
+        await screenshotHandler(allOptions, optionsWithoutDefaults);
         logSuccess('All screenshots have been taken.');
     });
 

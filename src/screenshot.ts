@@ -184,21 +184,31 @@ class Screenshot {
      * Process the configuration options
      *
      * @param {ConfigParam} options The configuration options to process. They can come from the command line arguments.
+     * @param {ConfigParam} [optionsWithoutDefaults] The configuration options to process. These come from the command line arguments but without the default values.
      * @param {ConfigParam} [configFileOptions] The configuration options to process from a JSON config file.
      * @returns {Promise<void>}
      */
     async processOptions(
         options: ConfigParam,
+        optionsWithoutDefaults?: ConfigParam,
         configFileOptions?: ConfigParam
     ): Promise<void> {
         const configParser = new ConfigParser();
-        if (isObjectWithValues(configFileOptions)) {
-            // Parse the configuration options from the JSON config file first.
-            configParser.parse(configFileOptions);
-        }
-        // Parse the configuration options from the command line arguments in case there are any overrides,
-        // or if there were not any configuration options from the JSON config file.
+
+        // First parse the command line arguments with the default values.
         configParser.parse(options);
+
+        if (isObjectWithValues(configFileOptions)) {
+            // Parse the configuration options from the JSON config file.
+            // These can override the command line arguments.
+            configParser.parse(configFileOptions);
+
+            // Lastly, parse the command line arguments without the default values.
+            // This will allow the specified command line arguments to override the JSON config file.
+            if (isObjectWithValues(optionsWithoutDefaults)) {
+                configParser.parse(optionsWithoutDefaults);
+            }
+        }
 
         if (configParser.hasUrls()) {
             this.getScreenshots(configParser.getConfig());
@@ -274,8 +284,12 @@ class Screenshot {
  * Entry point for processing the screenshots
  *
  * @param {ConfigParam} options The configuration options to process. These come from the command line arguments.
+ * @param {ConfigParam} optionsWithoutDefaults The configuration options to process. These come from the command line arguments but without the default values.
  */
-const screenshotHandler = async (options: ConfigParam): Promise<void> => {
+const screenshotHandler = async (
+    options: ConfigParam,
+    optionsWithoutDefaults: ConfigParam
+): Promise<void> => {
     const startTime = getStartTime();
     const screenshot = new Screenshot();
     await screenshot.init(options);
@@ -320,6 +334,7 @@ const screenshotHandler = async (options: ConfigParam): Promise<void> => {
                     promises.push(
                         screenshot.processOptions(
                             options,
+                            optionsWithoutDefaults,
                             fs.readJsonSync(configFile)
                         )
                     );
