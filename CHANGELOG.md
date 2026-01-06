@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-01-06
+
+### Added
+
+- Added support for looking for the default `shots.json` file in the current directory if no configuration file or URLs are specified.
+
+### Fixed
+
+- Fixed issue where default CLI arguments overrode JSON configuration.
+- Fixed issues where an invalid JSON file would throw an unhandled error.
+
 ## [1.2.0] - 2025-12-09
 
 ### Changed
